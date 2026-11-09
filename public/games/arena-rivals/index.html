@@ -259,6 +259,10 @@ body{background:#1689c9;color:#fff9e9}
 #game .health-stack .ammo-readout{font-size:11px;font-weight:900;color:#fff1a8}
 #game .cube-readout{margin-left:9px;color:#85f0bc}
 #game .under{gap:0}
+
+/* Clear power-cube counter: always visible beside ammo */
+.under .cube-readout{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:4px 9px;border-radius:7px;background:linear-gradient(180deg,#176c48,#0d4c36);border:1px solid #8df0b5;color:#c4ffda;font-size:11px;font-weight:950;box-shadow:0 2px 0 #073c2a}
+.under .cube-readout b{font-size:15px;color:#fff;font-variant-numeric:tabular-nums}
 </style></head><body>
 <header class="top"><div class="brand">RESPAWN <b>ARENA RIVALS</b></div><a class="back" href="/">← All games</a></header>
 <section id="home" class="screen active home"><div class="home-inner">
@@ -409,7 +413,7 @@ let arenaSocket=null,arenaOnline=false,arenaSide=0,arenaInfo=null,lastNetAt=0,qu
 const KITS={nova:{ammo:4,reload:1050,range:470,speed:10,pattern:'single'},bramble:{ammo:3,reload:1450,range:330,speed:7,pattern:'thorn'},zip:{ammo:6,reload:1150,range:350,speed:11,pattern:'twin'},ember:{ammo:3,reload:1500,range:720,speed:15,pattern:'sniper'},frost:{ammo:4,reload:1300,range:440,speed:8,pattern:'ice'},rook:{ammo:3,reload:1650,range:400,speed:6,pattern:'shell'},volt:{ammo:5,reload:1250,range:390,speed:12,pattern:'burst'},mako:{ammo:4,reload:1350,range:300,speed:8,pattern:'wave'},wisp:{ammo:4,reload:1450,range:520,speed:9,pattern:'orb'}};
 function fighter(team,type,x,y,side=0){const h=H[type]||H.nova,k=KITS[type]||KITS.nova;return{team,type,x,y,side,r:24,hp:h.hp,max:h.hp,speed:h.speed,damage:h.damage,rate:h.rate,lastShot:0,face:0,skill:0,respawn:0,flash:0,brain:0,goal:null,ammo:k.ammo,maxAmmo:k.ammo,reload:0,shield:0,slow:0,power:0,deadHandled:false,vx:0,vy:0}}
 function spawnPoint(side){const inset=105,perimeter=2*((WW-2*inset)+(WH-2*inset)),d=(side%10)/10*perimeter,w=WW-2*inset,h=WH-2*inset;if(d<w)return{x:inset+d,y:inset};if(d<w+h)return{x:WW-inset,y:inset+d-w};if(d<2*w+h)return{x:WW-inset-(d-w-h),y:WH-inset};return{x:inset,y:WH-inset-(d-2*w-h)}}
-function buildWorld(){rocks=[];for(let i=0;i<29;i++){let x=rand(150,WW-150),y=rand(150,WH-150);if(Math.hypot(x-WW/2,y-WH/2)<220||Array.from({length:10},(_,side)=>spawnPoint(side)).some(sp=>Math.hypot(x-sp.x,y-sp.y)<125))continue;rocks.push({x,y,w:rand(55,120),h:rand(48,100),type:i%3})}shards=[];powerBoxes=[];for(let i=0;i<15;i++)spawnShard();for(let i=0;i<18;i++)spawnPowerBox()}
+function buildWorld(){rocks=[];for(let i=0;i<29;i++){let x=rand(150,WW-150),y=rand(150,WH-150);if(Math.hypot(x-WW/2,y-WH/2)<220||Array.from({length:10},(_,side)=>spawnPoint(side)).some(sp=>Math.hypot(x-sp.x,y-sp.y)<125))continue;rocks.push({x,y,w:rand(55,120),h:rand(48,100),type:i%3})}shards=[];powerBoxes=[];for(let i=0;i<18;i++)spawnPowerBox()}
 function spawnShard(){let p;for(let n=0;n<40;n++){p={x:rand(75,WW-75),y:rand(75,WH-75)};if(!rocks.some(r=>Math.abs(p.x-r.x)<r.w/2+35&&Math.abs(p.y-r.y)<r.h/2+35)&&!powerBoxes.some(r=>Math.abs(p.x-r.x)<35&&Math.abs(p.y-r.y)<35))break}shards.push({...p,spin:rand(0,6)})}
 function spawnPowerBox(x,y){for(let n=0;n<35;n++){const p=x==null?{x:rand(180,WW-180),y:rand(180,WH-180)}:{x,y};if(!rocks.some(r=>Math.abs(p.x-r.x)<r.w/2+34&&Math.abs(p.y-r.y)<r.h/2+34)&&!powerBoxes.some(r=>Math.hypot(p.x-r.x,p.y-r.y)<58)&&!mapCircleBlocked(p.x,p.y,23)&&Array.from({length:10},(_,side)=>spawnPoint(side)).every(sp=>Math.hypot(p.x-sp.x,p.y-sp.y)>125)){powerBoxes.push({...p,hp:55,maxHp:55});return}}}
 function reset(info){
