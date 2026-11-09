@@ -193,6 +193,37 @@ body{background:#1689c9;color:#fff9e9}
  .hero-art{max-height:300px}
  .fighter-dock,.battle-dock{margin-top:8px}
 }
+
+/* Mobile controls: use touch capability as well as viewport width (iPads often exceed 760px). */
+.game{position:relative}
+@media (pointer:coarse), (max-width:760px){
+  .game{min-height:100dvh;padding-bottom:160px}
+  .mobile{display:flex!important;position:fixed!important;z-index:35;left:12px!important;right:12px!important;bottom:max(14px,env(safe-area-inset-bottom))!important;inset:auto 12px max(14px,env(safe-area-inset-bottom))!important;align-items:flex-end!important;justify-content:space-between!important;gap:10px!important;margin:0!important;pointer-events:none!important}
+  .joy-wrap,.mobile-skill{pointer-events:auto!important;touch-action:none}
+  .joy-wrap{gap:6px}
+  .stick{width:clamp(88px,22vw,116px)!important;height:clamp(88px,22vw,116px)!important;touch-action:none!important;user-select:none;-webkit-user-select:none}
+  .stick:after{pointer-events:none}
+  .mobile-skill{display:grid;place-content:center;flex:0 0 auto;width:64px!important;height:64px!important;border-radius:50%;font-size:12px!important;line-height:1.1;touch-action:manipulation!important}
+  .under{padding:0 8px;gap:6px}
+  .under>span{display:none}
+}
+.waiting-screen{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:20px;background:#041b30df;backdrop-filter:blur(8px)}
+.waiting-screen.show{display:flex}
+.waiting-card{width:min(420px,100%);padding:25px 22px 20px;text-align:center;color:#fff8df;background:linear-gradient(160deg,#147db7,#0d568b);border:3px solid #9be4fa;border-radius:19px;box-shadow:0 7px 0 #073d68,0 22px 65px #00182c99}
+.waiting-kicker{font-size:10px;font-weight:950;letter-spacing:2px;color:#ffe17a}
+.waiting-card h2{margin:7px 0 4px;font-size:clamp(25px,7vw,34px);font-weight:1000}
+.waiting-sub{margin:0;color:#d8f4ff;font-size:12px}
+.queue-count{margin:20px 0 13px;padding:15px;border-radius:12px;background:#073e6b88;border:1px solid #8bdcf4}
+.queue-count strong{display:block;font-size:32px;line-height:1.1;color:#ffe16b}
+.queue-count span{font-size:10px;font-weight:900;letter-spacing:1px;color:#e4f8ff}
+.queue-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:14px 0}
+.queue-slot{padding:10px 3px;border-radius:9px;background:#084879;border:1px solid #5ab9e2;color:#e9f8ff;font-size:9px;font-weight:900}
+.queue-slot.human{background:#247f8c;border-color:#b0f0e7;color:white}
+.queue-slot.bot{background:#584c7e;border-color:#d5c5ff}
+.waiting-timer{font-size:13px;font-weight:900;color:#fff3b1;margin:13px 0}
+.waiting-progress{height:8px;border-radius:9px;background:#073d68;overflow:hidden;margin:0 0 17px}
+.waiting-progress i{display:block;width:0;height:100%;background:#ffe16b;border-radius:9px;transition:width .2s}
+.waiting-cancel{width:100%;padding:11px;border-radius:9px;border:2px solid #9bdcf5;background:#0a4775;color:white;font-weight:900}
 </style></head><body>
 <header class="top"><div class="brand">RESPAWN <b>ARENA RIVALS</b></div><a class="back" href="/">← All games</a></header>
 <section id="home" class="screen active home"><div class="home-inner">
@@ -231,6 +262,7 @@ body{background:#1689c9;color:#fff9e9}
 <div class="stage"><canvas id="world" width="960" height="540"></canvas><div class="hud"><div class="score blue">BLUE TEAM &nbsp;<b id="blueScore">0</b></div><div class="timer" id="clock">2:00</div><div class="score red">ORANGE TEAM &nbsp;<b id="orangeScore">0</b></div></div><div class="overlay" id="overlay"><div class="dialog"><div class="eyebrow">MATCH COMPLETE</div><h2 id="result">Victory!</h2><p id="report"></p><button class="play" id="again">REMATCH</button><button class="small" id="backMenu">MAIN MENU</button></div></div></div>
 <div class="under"><div>HEALTH<div class="health"><i id="hpbar"></i></div></div><span>Move: WASD / arrows · Aim: mouse · Attack: click / space</span><button class="skill" id="skill">⚡ SPECIAL <b id="skillLabel">READY</b></button></div>
 <div class="mobile"><div class="joy-wrap"><div class="joy-label">MOVE</div><div class="stick" id="stick" aria-label="Movement joystick"></div></div><div class="joy-wrap"><div class="joy-label">AIM + ATTACK</div><div class="stick" id="aimStick" aria-label="Aim and attack joystick"></div></div><button class="mobile-skill" id="mobileSkill">⚡<br>ULTI</button></div></section>
+<div class="waiting-screen" id="waitingScreen" role="dialog" aria-modal="true" aria-labelledby="waitingTitle"><div class="waiting-card"><div class="waiting-kicker">ARENA RIVALS MATCHMAKING</div><h2 id="waitingTitle">WAITING FOR MATCH</h2><p class="waiting-sub" id="waitingSub">Looking for another player to join your arena.</p><div class="queue-count"><strong id="queueCount">1 / 2</strong><span>REAL PLAYERS FOUND</span></div><div class="queue-slots"><div class="queue-slot human" id="slot1">YOU</div><div class="queue-slot" id="slot2">PLAYER 2</div><div class="queue-slot bot" id="slot3">BOT</div><div class="queue-slot bot" id="slot4">BOT</div></div><div class="waiting-timer" id="waitingTimer">Bots join in 12 seconds</div><div class="waiting-progress"><i id="waitingProgress"></i></div><button class="waiting-cancel" id="cancelQueue">CANCEL SEARCH</button></div></div>
 <div class="name-screen" id="nameScreen"><div class="name-card"><div class="eyebrow">PLAYER PROFILE</div><h2>CHOOSE YOUR NAME</h2><p>This name will be shown to other players in Arena Rivals.</p><input id="playerNameInput" maxlength="16" autocomplete="nickname" placeholder="Enter a name"><div class="name-actions"><button class="small" id="nameCancel">CANCEL</button><button class="play" id="nameConfirm">CONTINUE</button></div></div></div>
 <script>
 (()=>{
@@ -300,7 +332,7 @@ function renderHero(){const h=H[chosen];svg.innerHTML=heroSvg(chosen);$('heroNam
 document.querySelectorAll('.hero-pick').forEach(b=>b.onclick=()=>{chosen=b.dataset.hero;renderHero()});renderHero();
 const cv=$('world'),ctx=cv.getContext('2d'),VW=960,VH=540,WW=2600,WH=1800,clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),rand=(a,b)=>a+Math.random()*(b-a);
 let player,bots,shots,shards,rocks,blue,orange,time,active=false,paused=false,ended=false,last=0,keys={},mouse={x:700,y:260},shooting=false,stick=null,aimStick=null,cam={x:0,y:0};
-let arenaSocket=null,arenaOnline=false,arenaSide=0,arenaInfo=null,remotePlayer=null,playerName='',lastNetAt=0,queueTick=null;
+let arenaSocket=null,arenaOnline=false,arenaSide=0,arenaInfo=null,remotePlayer=null,playerName='',lastNetAt=0,queueTick=null,queueStartedAt=0,queueWaitMs=12000,queuePlayers=1;
 function fighter(team,type,x,y){const h=H[type];return{team,type,x,y,r:24,hp:h.hp,max:h.hp,speed:h.speed,damage:h.damage,rate:h.rate,lastShot:0,face:0,skill:0,respawn:0,flash:0,brain:0,goal:null}}
 function buildWorld(){rocks=[];for(let i=0;i<29;i++){let x=rand(150,WW-150),y=rand(150,WH-150);if(Math.hypot(x-WW/2,y-WH/2)<220)continue;rocks.push({x,y,w:rand(55,120),h:rand(48,100),type:i%3})}shards=[];for(let i=0;i<15;i++)spawnShard()}
 function spawnShard(){let p;for(let n=0;n<40;n++){p={x:rand(75,WW-75),y:rand(75,WH-75)};if(!rocks.some(r=>Math.abs(p.x-r.x)<r.w/2+35&&Math.abs(p.y-r.y)<r.h/2+35))break}shards.push({...p,spin:rand(0,6)})}
@@ -357,28 +389,35 @@ ctx.restore();
 ctx.fillStyle='#ffffffaa';ctx.font='12px system-ui';ctx.fillText('NORTH GROVE',20,28);ctx.strokeStyle='#ffffff55';ctx.strokeRect(8,8,VW-16,VH-16)}
 function loop(now){if(!active||paused)return;let dt=Math.min(40,now-last);last=now;update(dt);draw();if(active&&!paused)requestAnimationFrame(loop)}
 function finish(){if(ended)return;ended=true;active=false;sendArena({t:'arena_leave'});$('result').textContent=blue===orange?'DRAW':blue>orange?'VICTORY!':'DEFEAT';$('report').textContent='Blue team '+blue+' — Orange team '+orange+'. '+(blue>orange?'Your team controls the arena.':blue<orange?'The rivals won this round.':'A close match.');$('overlay').classList.add('show')}
-function menu(){active=false;paused=false;arenaOnline=false;remotePlayer=null;clearInterval(queueTick);if(arenaSocket){sendArena({t:'arena_leave'});arenaSocket.close();arenaSocket=null}$('queueStatus').classList.remove('show');$('playBtn').disabled=false;$('game').classList.remove('active');$('home').classList.add('active')}
+function menu(){active=false;paused=false;arenaOnline=false;remotePlayer=null;hideWaiting();clearInterval(queueTick);if(arenaSocket){sendArena({t:'arena_leave'});arenaSocket.close();arenaSocket=null}$('queueStatus').classList.remove('show');$('playBtn').disabled=false;$('game').classList.remove('active');$('home').classList.add('active')}
 function pause(){if(!active||ended)return;paused=!paused;$('pauseBtn').textContent=paused?'▶ Resume':'Ⅱ Pause';if(!paused){last=performance.now();requestAnimationFrame(loop)}}
 function sendArena(data){if(arenaSocket&&arenaSocket.readyState===WebSocket.OPEN)arenaSocket.send(JSON.stringify(data))}
 function beginQueue(){if(!playerName){$('nameScreen').classList.add('show');$('playerNameInput').value='';$('playerNameInput').focus();return}connectArena()}
+function showWaiting(){ $('waitingScreen').classList.add('show');$('queueCount').textContent=queuePlayers+' / 2';$('waitingTimer').textContent='Connecting to matchmaking…';$('waitingProgress').style.width='0%';$('slot1').textContent=playerName.toUpperCase();$('slot2').textContent='PLAYER 2';$('slot2').className='queue-slot';$('slot3').textContent='BOT';$('slot4').textContent='BOT';$('waitingSub').textContent='Finding real players first. Bots fill any empty slots when the timer ends.'}
+function updateWaiting(players){queuePlayers=players;$('queueCount').textContent=players+' / 2';$('slot2').className=players>=2?'queue-slot human':'queue-slot';$('slot2').textContent=players>=2?'PLAYER 2':'PLAYER 2';$('waitingSub').textContent=players>=2?'Players found! Preparing your match…':'Waiting for more players. Empty slots will be filled with bots.'}
+function hideWaiting(){ $('waitingScreen').classList.remove('show');clearInterval(queueTick);queueTick=null}
+function cancelQueue(){if(arenaSocket){sendArena({t:'arena_cancel'});arenaSocket.close();arenaSocket=null}hideWaiting();$('playBtn').disabled=false;$('queueStatus').classList.remove('show')}
 function connectArena(){
  if(arenaSocket){try{arenaSocket.close()}catch(e){}}
- $('queueStatus').classList.add('show');$('queueStatus').textContent='Connecting to matchmaking…';$('playBtn').disabled=true;
+ $('playBtn').disabled=true;queueStartedAt=Date.now();queueWaitMs=12000;queuePlayers=1;showWaiting();
  const proto=location.protocol==='https:'?'wss://':'ws://';arenaSocket=new WebSocket(proto+location.host+'/ws');
- arenaSocket.onopen=()=>{sendArena({t:'arena_find',name:playerName,fighter:chosen});$('queueStatus').textContent='Searching… if nobody joins in 12 seconds, bots will fill the team.';let started=Date.now();clearInterval(queueTick);queueTick=setInterval(()=>{if(!arenaOnline)$('queueStatus').textContent='Searching for players · '+Math.max(0,12-Math.floor((Date.now()-started)/1000))+'s until bots join';},250)};
+ arenaSocket.onopen=()=>{sendArena({t:'arena_find',name:playerName,fighter:chosen});queueStartedAt=Date.now();queueTick=setInterval(()=>{if(arenaOnline)return;const elapsed=Date.now()-queueStartedAt,remain=Math.max(0,Math.ceil((queueWaitMs-elapsed)/1000));$('waitingTimer').textContent=remain>0?'Bots join in '+remain+' second'+(remain===1?'':'s'):'Starting match with bots…';$('waitingProgress').style.width=Math.min(100,elapsed/queueWaitMs*100)+'%';},150)};
  arenaSocket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
- if(m.t==='arena_wait')return;
- if(m.t==='arena_start'){clearInterval(queueTick);$('queueStatus').classList.remove('show');$('playBtn').disabled=false;arenaInfo=m;reset(m);return}
+ if(m.t==='arena_wait'){queueWaitMs=m.waitMs||12000;return}
+ if(m.t==='arena_queue'){updateWaiting(m.players);return}
+ if(m.t==='arena_start'){hideWaiting();$('playBtn').disabled=false;arenaInfo=m;reset(m);return}
  if(m.t==='arena_state'&&remotePlayer){remotePlayer.x=m.x;remotePlayer.y=m.y;remotePlayer.hp=m.hp;remotePlayer.face=m.face;remotePlayer.name=m.name||remotePlayer.name;return}
  if(m.t==='arena_shot'){shots.push({x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.side,damage:m.damage,life:85});return}
  if(m.t==='arena_left'){finish();$('result').textContent='Opponent disconnected';$('report').textContent='Your opponent left the match.';return}
+ if(m.t==='arena_cancelled'){hideWaiting();return}
  };
- arenaSocket.onerror=()=>{$('queueStatus').textContent='Could not connect. Please try again.';$('playBtn').disabled=false;clearInterval(queueTick)};
- arenaSocket.onclose=()=>{if(!arenaOnline)$('playBtn').disabled=false};
+ arenaSocket.onerror=()=>{hideWaiting();$('playBtn').disabled=false};
+ arenaSocket.onclose=()=>{if(!arenaOnline){hideWaiting();$('playBtn').disabled=false}};
 }
 $('playBtn').onclick=beginQueue;$('again').onclick=beginQueue;$('backMenu').onclick=menu;$('homeBtn').onclick=menu;$('pauseBtn').onclick=pause;$('skill').onclick=special;$('mobileSkill').onclick=special;
 $('nameConfirm').onclick=()=>{playerName=$('playerNameInput').value.trim().replace(/[^a-zA-Z0-9 _-]/g,'').slice(0,16);if(!playerName){$('playerNameInput').focus();return}$('nameScreen').classList.remove('show');beginQueue()};
 $('nameCancel').onclick=()=>$('nameScreen').classList.remove('show');$('playerNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nameConfirm').click()});
+$('cancelQueue').onclick=cancelQueue;
 addEventListener('keydown',e=>{keys[e.key]=true;if(e.key.toLowerCase()==='e')special();if(e.key===' '){e.preventDefault();shooting=true}if(e.key==='Escape')pause()});addEventListener('keyup',e=>{keys[e.key]=false;if(e.key===' ')shooting=false});
 cv.addEventListener('pointermove',e=>{let r=cv.getBoundingClientRect();mouse={x:(e.clientX-r.left)*VW/r.width,y:(e.clientY-r.top)*VH/r.height}});cv.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')shooting=true;let r=cv.getBoundingClientRect();mouse={x:(e.clientX-r.left)*VW/r.width,y:(e.clientY-r.top)*VH/r.height}});addEventListener('pointerup',()=>shooting=false);
 
