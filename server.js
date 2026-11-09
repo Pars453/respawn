@@ -90,7 +90,11 @@ const closeFrame = (code) => frame(0x8, Buffer.from([code >> 8, code & 255]));
 const PING = frame(0x9, Buffer.alloc(0));
 
 const clients = new Set();
-let waiting = null;                                   // the player searching for an opponent
+let waiting = null;                                   // Clash of Vikings queue
+const ARENA_WAIT_MS = 12000;
+const ARENA_FIGHTERS = new Set(['nova','bramble','zip']);
+let arenaWaiting = [];
+let arenaQueueTimer = null;
 
 class Client {
   constructor(socket) {
@@ -104,6 +108,8 @@ class Client {
     this.hello = null;
     this.match = null;
     this.side = 0;
+    this.arenaMatch = null;
+    this.arenaSide = -1;
     this.ended = false;
     this.lastEmoteAt = 0;
     this.badMessages = 0;
@@ -134,6 +140,7 @@ class Client {
     clients.delete(this);
     if (waiting === this) waiting = null;
     leave(this);
+    leaveArena(this);
   }
 
   onData(chunk) {
@@ -198,6 +205,11 @@ class Client {
       case 'h': checkHash(this, m); break;
       case 'end': finished(this); break;
       case 'leave': leave(this); break;
+      case 'arena_find': findArena(this, m); break;
+      case 'arena_cancel': leaveArenaQueue(this); break;
+      case 'arena_state': relayArena(this, 'arena_state', m); break;
+      case 'arena_shot': relayArena(this, 'arena_shot', m); break;
+      case 'arena_leave': leaveArena(this); break;
       default: break;
     }
   }
@@ -231,6 +243,90 @@ const cleanTrophies = (n) => Number.isFinite(Number(n)) ? Math.max(0, Math.min(1
 const cleanRune = (r) => (/^[a-z]{0,12}$/.test(String(r || '')) ? String(r || '') : '');
 const cleanName = (n) => String(n || 'Viking').replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0, 16) || 'Viking';
 const cleanPlayerLevel = (n) => Number.isInteger(Number(n)) ? Math.max(1, Math.min(100, Number(n))) : 1;
+
+// Arena Rivals has its own queue and lightweight real-time state relay.
+// Two human slots are available; the game fills the other team slots with bots.
+const cleanArenaName = (n) => String(n || 'Rookie').replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0, 16) || 'Rookie';
+function findArena(c, m) {
+  if (c.arenaMatch) leaveArena(c);
+  leaveArenaQueue(c);
+  c.arenaName = cleanArenaName(m.name);
+  c.arenaFighter = ARENA_FIGHTERS.has(m.fighter) ? m.fighter : 'nova';
+  if (arenaWaiting.length >= 1) {
+    const first = arenaWaiting.shift();
+    clearTimeout(arenaQueueTimer);
+    arenaQueueTimer = null;
+    startArenaMatch([first, c]);
+    return;
+  }
+  arenaWaiting.push(c);
+  c.send({ t: 'arena_wait', waitMs: ARENA_WAIT_MS });
+  arenaQueueTimer = setTimeout(() => {
+    arenaQueueTimer = null;
+    const players = arenaWaiting.splice(0, 2).filter(p => !p.dead);
+    if (players.length) startArenaMatch(players);
+  }, ARENA_WAIT_MS);
+}
+function leaveArenaQueue(c) {
+  const i = arenaWaiting.indexOf(c);
+  if (i !== -1) arenaWaiting.splice(i, 1);
+  if (!arenaWaiting.length && arenaQueueTimer) {
+    clearTimeout(arenaQueueTimer);
+    arenaQueueTimer = null;
+  }
+}
+function startArenaMatch(players) {
+  const match = {
+    id: crypto.randomBytes(8).toString('hex'),
+    players: players.slice(0, 2),
+    seed: 1 + Math.floor(Math.random() * 0x7fffffff),
+    startedAt: Date.now(),
+    closed: false
+  };
+  match.players.forEach((p, side) => {
+    p.arenaMatch = match;
+    p.arenaSide = side;
+  });
+  const roster = [
+    ...match.players.map((p, side) => ({ name: p.arenaName, fighter: p.arenaFighter, side, bot: false })),
+    ...(match.players.length < 2 ? [{ name: 'Arena Bot', fighter: 'bramble', side: 1, bot: true }] : [])
+  ];
+  match.players.forEach((p, side) => p.send({
+    t: 'arena_start', matchId: match.id, seed: match.seed, side,
+    name: p.arenaName, opponent: match.players[1 - side]?.arenaName || 'Arena Bot',
+    players: roster, botSlots: match.players.length === 1 ? 3 : 2
+  }));
+}
+function relayArena(c, type, m) {
+  const match = c.arenaMatch;
+  if (!match || match.closed) return;
+  const other = match.players[1 - c.arenaSide];
+  if (!other || other.dead || other.arenaMatch !== match) return;
+  if (type === 'arena_state') {
+    const x = Number(m.x), y = Number(m.y), hp = Number(m.hp), face = Number(m.face);
+    if (![x,y,hp,face].every(Number.isFinite) || x < 0 || x > 2600 || y < 0 || y > 1800) return;
+    other.send({ t: type, side: c.arenaSide, x, y, hp: Math.max(0, Math.min(200, hp)), face, name: c.arenaName });
+  } else {
+    const x=Number(m.x), y=Number(m.y), vx=Number(m.vx), vy=Number(m.vy), damage=Number(m.damage);
+    if (![x,y,vx,vy,damage].every(Number.isFinite) || Math.abs(vx)>20 || Math.abs(vy)>20 || damage<1 || damage>50) return;
+    other.send({ t: type, side: c.arenaSide, x, y, vx, vy, damage });
+  }
+}
+function leaveArena(c) {
+  leaveArenaQueue(c);
+  const match = c.arenaMatch;
+  if (!match) return;
+  c.arenaMatch = null;
+  if (match.closed) return;
+  match.closed = true;
+  for (const p of match.players) {
+    if (p !== c && p.arenaMatch === match) {
+      p.arenaMatch = null;
+      if (!p.dead) p.send({ t: 'arena_left' });
+    }
+  }
+}
+
 function cleanLv(o) {
   const out = {};
   if (o && typeof o === 'object') {
