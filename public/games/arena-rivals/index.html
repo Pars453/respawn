@@ -402,7 +402,7 @@ function fire(e,x,y,type='bolt'){
 }
 function special(){if(!player||player.hp<=0||player.skill>0)return;player.skill=9000;if(player.type==='bramble'){player.hp=Math.min(player.max,player.hp+55);player.flash=400}else if(player.type==='zip'){move(player,Math.cos(player.face)*4,Math.sin(player.face)*4,480);player.flash=350}else{for(let i=0;i<14;i++){let a=i*Math.PI/7,sh={x:player.x,y:player.y,vx:Math.cos(a)*8,vy:Math.sin(a)*8,team:player.side,damage:12,life:43};shots.push(sh);if(arenaOnline)sendArena({t:'arena_shot',x:sh.x,y:sh.y,vx:sh.vx,vy:sh.vy,damage:sh.damage})}}}
 function nearestEnemy(e){return [player,...remotePlayers,...bots].filter(o=>o&&o!==e&&o.side!==e.side&&o.hp>0).sort((a,b)=>dist(e,a)-dist(e,b))[0]}
-function ai(e,dt){if(e.hp<=0){e.respawn+=dt;if(e.respawn>2100){e.hp=e.max;e.x=e.team?WW/2+260:WW/2-250;e.y=rand(WH/2-230,WH/2+230);e.respawn=0}return}
+function ai(e,dt){if(e.hp<=0){e.respawn+=dt;if(e.respawn>2100){e.hp=e.max;e.x=WW/2+Math.cos(e.side*Math.PI/5)*510;e.y=WH/2+Math.sin(e.side*Math.PI/5)*510;e.respawn=0}return}
 let foe=nearestEnemy(e),low=e.hp/e.max<.36,near=foe&&dist(e,foe)<460;let target=null,goalType='shard';
 if(near){if(low){target={x:e.x-(foe.x-e.x)*1.5,y:e.y-(foe.y-e.y)*1.5};goalType='retreat'}else if(dist(e,foe)<300){target=foe;goalType='fight'}else{target=foe;goalType='fight'}}
 if(!target){let candidates=shards.map(s=>({s,d:dist(e,s)})).sort((a,b)=>a.d-b.d);let chosenShard=candidates.find(c=>!blocked(e,c.s))||candidates[0];if(chosenShard)target=chosenShard.s}
@@ -438,7 +438,7 @@ for(const s of shots){ctx.fillStyle=['#9beeff','#ff9a70','#ffe16b','#c4a1ff','#8
 ctx.restore();
 ctx.fillStyle='#ffffffaa';ctx.font='12px system-ui';ctx.fillText('NORTH GROVE',20,28);ctx.strokeStyle='#ffffff55';ctx.strokeRect(8,8,VW-16,VH-16)}
 function loop(now){if(!active||paused)return;let dt=Math.min(40,now-last);last=now;update(dt);draw();if(active&&!paused)requestAnimationFrame(loop)}
-function finish(){if(ended)return;ended=true;active=false;sendArena({t:'arena_leave'});$('result').textContent=blue===orange?'DRAW':blue>orange?'VICTORY!':'DEFEAT';$('report').textContent='Blue team '+blue+' — Orange team '+orange+'. '+(blue>orange?'Your team controls the arena.':blue<orange?'The rivals won this round.':'A close match.');$('overlay').classList.add('show')}
+function finish(){if(ended)return;ended=true;active=false;const myKills=scores[arenaSide]||0,rank=1+scores.filter((v,i)=>i!==arenaSide&&v>myKills).length,bonus=rank===1?40:rank<=3?20:0,earned=30+myKills*8+bonus;coins+=earned;saveProfile();const entities=[player,...remotePlayers,...bots],leaderSide=scores.reduce((best,v,i)=>v>scores[best]?i:best,0),leader=entities.find(e=>e&&e.side===leaderSide);sendArena({t:'arena_leave'});$('result').textContent=rank===1?'ARENA CHAMPION':'#'+rank+' FINISH';$('report').textContent='You scored '+myKills+' eliminations. Leader: '+(leader?leader.name:'Unknown')+' ('+scores[leaderSide]+' kills). Reward: ✦ '+earned+' coins.';$('overlay').classList.add('show')}
 function menu(){active=false;paused=false;arenaOnline=false;hideWaiting();clearInterval(queueTick);if(arenaSocket){sendArena({t:'arena_leave'});arenaSocket.close();arenaSocket=null}$('queueStatus').classList.remove('show');$('playBtn').disabled=false;$('game').classList.remove('active');$('home').classList.add('active')}
 function pause(){if(!active||ended)return;paused=!paused;$('pauseBtn').textContent=paused?'▶ Resume':'Ⅱ Pause';if(!paused){last=performance.now();requestAnimationFrame(loop)}}
 function sendArena(data){if(arenaSocket&&arenaSocket.readyState===WebSocket.OPEN)arenaSocket.send(JSON.stringify(data))}
@@ -458,14 +458,14 @@ function connectArena(){
  if(m.t==='arena_start'){hideWaiting();$('playBtn').disabled=false;arenaInfo=m;reset(m);return}
  if(m.t==='arena_state'){const e=remotePlayers.find(p=>p.side===m.side);if(e){e.x=m.x;e.y=m.y;e.hp=m.hp;e.face=m.face;e.name=m.name||e.name}return}
  if(m.t==='arena_shot'){shots.push({x:m.x,y:m.y,vx:m.vx,vy:m.vy,team:m.side,damage:m.damage,life:m.shotType==='heavy'?105:75,shotType:m.shotType||'bolt'});return}
- if(m.t==='arena_left'){finish();$('result').textContent='PLAYER LEFT';$('report').textContent=(m.name||'A player')+' disconnected from the match.';return}
+ if(m.t==='arena_player_left'){const e=remotePlayers.find(p=>p.side===m.side);if(e)e.hp=0;return}
  if(m.t==='arena_cancelled'){hideWaiting();return}
  };
  arenaSocket.onerror=()=>{hideWaiting();$('playBtn').disabled=false};
  arenaSocket.onclose=()=>{if(!arenaOnline){hideWaiting();$('playBtn').disabled=false}};
 }
 $('playBtn').onclick=beginQueue;$('again').onclick=beginQueue;$('backMenu').onclick=menu;$('homeBtn').onclick=menu;$('pauseBtn').onclick=pause;$('skill').onclick=special;$('mobileSkill').onclick=special;
-$('nameConfirm').onclick=()=>{playerName=$('playerNameInput').value.trim().replace(/[^a-zA-Z0-9 _-]/g,'').slice(0,16);if(!playerName){$('playerNameInput').focus();return}$('nameScreen').classList.remove('show');beginQueue()};
+$('nameConfirm').onclick=()=>{playerName=$('playerNameInput').value.trim().replace(/[^a-zA-Z0-9 _-]/g,'').slice(0,16);if(!playerName){$('playerNameInput').focus();return}$('nameScreen').classList.remove('show');saveProfile();beginQueue()};
 $('nameCancel').onclick=()=>$('nameScreen').classList.remove('show');$('playerNameInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('nameConfirm').click()});
 $('cancelQueue').onclick=cancelQueue;
 addEventListener('keydown',e=>{keys[e.key]=true;if(e.key.toLowerCase()==='e')special();if(e.key===' '){e.preventDefault();shooting=true}if(e.key==='1'||e.key==='2'||e.key==='3')selectShot(['bolt','spread','heavy'][Number(e.key)-1]);if(e.key==='Escape')pause()});addEventListener('keyup',e=>{keys[e.key]=false;if(e.key===' ')shooting=false});
