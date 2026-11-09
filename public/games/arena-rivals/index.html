@@ -272,11 +272,25 @@ body{background:#1689c9;color:#fff9e9}
 <script>
 (()=>{
 const $=id=>document.getElementById(id),svg=$('heroArt');
+const SAVE_KEY='respawn-arena-profile-v2';
+let savedProfile={};try{savedProfile=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')||{}}catch(_){}
+let owned=Array.isArray(savedProfile.owned)?savedProfile.owned.filter(x=>['nova','bramble','zip','ember','frost','rook','volt','mako','wisp'].includes(x)):['nova','bramble','zip'];
+if(!owned.includes('nova'))owned.unshift('nova');
+let coins=Number.isFinite(savedProfile.coins)?Math.max(0,savedProfile.coins):250;
+let playerName=String(savedProfile.name||'').slice(0,16);
+function saveProfile(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({owned,coins,name:playerName,chosen}))}catch(_){}updateWallet()}
+function updateWallet(){$('coinCount').textContent='✦ '+coins;$('unlockCount').textContent=owned.length+' / 9 FIGHTERS'}
 const H={
 nova:{name:'Nova',role:'ALL-ROUND FIGHTER',desc:'A disciplined arena guardian. Balanced movement, reliable attacks and a pulse burst that hits in every direction.',hp:100,speed:3.25,damage:17,rate:340,color:'#4fc1dc',dark:'#205d78',cloth:'#293d55',accent:'#f2d28a',weapon:'pulse'},
 bramble:{name:'Bramble',role:'HEAVY DEFENDER',desc:'A sturdy frontline fighter. Slower on the move, tougher in a fight, and able to restore health with a shield bloom.',hp:145,speed:2.55,damage:23,rate:490,color:'#7fba70',dark:'#365f42',cloth:'#43553a',accent:'#d9e7a1',weapon:'shield'},
-zip:{name:'Zip',role:'FAST STRIKER',desc:'A nimble skirmisher who can dash through danger and keep opponents under pressure.',hp:82,speed:4,damage:14,rate:265,color:'#edbd54',dark:'#965438',cloth:'#8e563e',accent:'#f7e2b4',weapon:'blade'}};
-let chosen='nova';
+zip:{name:'Zip',role:'FAST STRIKER',desc:'A nimble skirmisher who can dash through danger and keep opponents under pressure.',hp:82,speed:4,damage:14,rate:265,color:'#edbd54',dark:'#965438',cloth:'#8e563e',accent:'#f7e2b4',weapon:'blade'},
+ember:{name:'Ember',role:'LONG-RANGE MARKSMAN',desc:'A patient sharpshooter whose precise shots reward careful aim and good positioning.',hp:90,speed:3.1,damage:22,rate:520,color:'#ed7551',dark:'#793b36',cloth:'#9d4937',accent:'#ffd08a',rarity:'RARE',weapon:'flare'},
+frost:{name:'Frost',role:'TACTICAL CONTROLLER',desc:'A cool-headed controller who slows the pace and holds important ground.',hp:112,speed:2.9,damage:16,rate:410,color:'#8ad7ed',dark:'#315f83',cloth:'#416e91',accent:'#d8f7ff',rarity:'RARE',weapon:'ice'},
+rook:{name:'Rook',role:'ARMOURED GUARD',desc:'A resilient frontline fighter built to survive pressure and protect a position.',hp:160,speed:2.25,damage:20,rate:560,color:'#9ca6b3',dark:'#414d5d',cloth:'#596779',accent:'#f2d49a',rarity:'RARE',weapon:'hammer'},
+volt:{name:'Volt',role:'BURST ASSASSIN',desc:'A high-mobility fighter who relies on timing, quick attacks and smart escapes.',hp:78,speed:4.15,damage:13,rate:250,color:'#e4d75b',dark:'#6b632a',cloth:'#8c8437',accent:'#fff4a1',rarity:'EPIC',weapon:'spark'},
+mako:{name:'Mako',role:'CLOSE-RANGE BRAWLER',desc:'A daring close-range fighter with strong burst damage when opponents get too close.',hp:108,speed:3.05,damage:19,rate:380,color:'#55b7a8',dark:'#245b60',cloth:'#367f78',accent:'#baf5df',rarity:'EPIC',weapon:'tide'},
+wisp:{name:'Wisp',role:'TRICKSTER',desc:'A slippery trickster who trades durability for speed and unpredictable engagements.',hp:88,speed:3.85,damage:17,rate:355,color:'#bca1ed',dark:'#57447e',cloth:'#7661a0',accent:'#f0dcff',rarity:'MYTHIC',weapon:'arc'}};
+let chosen=owned.includes(savedProfile.chosen)?savedProfile.chosen:'nova';
 function heroSvg(k){const h=H[k],heavy=k==='bramble',quick=k==='zip';return `
 <defs>
  <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#fff4d9"/><stop offset=".35" stop-color="${h.accent}"/><stop offset="1" stop-color="#8a7048"/></linearGradient>
@@ -333,8 +347,25 @@ ${heavy?'<path d="M72 182 Q44 198 52 241 Q68 267 98 253 L110 216Z" fill="#66864d
 <path d="M169 281 L192 281 L190 303 L171 303Z" fill="url(#metal)" stroke="#26313a" stroke-width="4"/>
 <path d="M177 286 L184 286 L183 297 L177 297Z" fill="#a67a3d"/>
 ` }
-function renderHero(){const h=H[chosen];svg.innerHTML=heroSvg(chosen);$('heroName').textContent=h.name.toUpperCase();$('heroRole').textContent=h.role;$('heroDesc').textContent=h.desc;$('healthNum').textContent=h.hp;$('speedNum').textContent=h.speed;$('powerNum').textContent=h.damage;$('healthMeter').style.width=Math.round(h.hp/150*100)+'%';$('speedMeter').style.width=Math.round(h.speed/4.2*100)+'%';$('powerMeter').style.width=Math.round(h.damage/25*100)+'%';document.querySelectorAll('.hero-pick').forEach(b=>b.classList.toggle('selected',b.dataset.hero===chosen));svg.classList.remove('bump');void svg.offsetWidth;svg.classList.add('bump')}
-document.querySelectorAll('.hero-pick').forEach(b=>b.onclick=()=>{chosen=b.dataset.hero;renderHero()});renderHero();
+function renderHero(){
+ const h=H[chosen];svg.innerHTML=heroSvg(chosen);$('heroName').textContent=h.name.toUpperCase();$('heroRole').textContent=h.role;$('heroDesc').textContent=h.desc;$('healthNum').textContent=h.hp;$('speedNum').textContent=h.speed;$('powerNum').textContent=h.damage;$('healthMeter').style.width=Math.round(h.hp/170*100)+'%';$('speedMeter').style.width=Math.round(h.speed/4.3*100)+'%';$('powerMeter').style.width=Math.round(h.damage/25*100)+'%';
+ $('brawlerGrid').innerHTML=Object.keys(H).map(k=>{const v=H[k],isOwned=owned.includes(k);return '<button class="hero-pick '+(k===chosen?'selected ':'')+(!isOwned?'locked':'')+'" data-hero="'+k+'">'+v.name.toUpperCase()+'<span class="rarity">'+(isOwned?'UNLOCKED':v.rarity||'STARTER')+'</span></button>'}).join('');
+ $('brawlerGrid').querySelectorAll('.hero-pick').forEach(btn=>btn.onclick=()=>{const k=btn.dataset.hero;if(!owned.includes(k)){$('crateScreen').classList.add('show');$('crateResult').textContent=H[k].name+' is locked. Open crates to unlock it.';return}chosen=k;saveProfile();renderHero()});
+ svg.classList.remove('bump');void svg.offsetWidth;svg.classList.add('bump');updateWallet()
+}
+function openCrate(kind){
+ const costs={scout:100,elite:250,mythic:500},cost=costs[kind];if(coins<cost){$('crateResult').textContent='Not enough coins. Play matches to earn more.';return}
+ coins-=cost;
+ const roll=Math.random(),rarity=kind==='scout'?(roll<.75?'RARE':roll<.97?'EPIC':'MYTHIC'):kind==='elite'?(roll<.45?'RARE':roll<.9?'EPIC':'MYTHIC'):(roll<.15?'RARE':roll<.7?'EPIC':'MYTHIC');
+ let pool=Object.keys(H).filter(k=>!owned.includes(k)&&H[k].rarity===rarity);
+ if(!pool.length)pool=Object.keys(H).filter(k=>!owned.includes(k));
+ if(!pool.length){const refund=Math.floor(cost*.65);coins+=refund;$('crateResult').innerHTML='ALL FIGHTERS UNLOCKED!<br>Duplicate compensation: ✦ '+refund;saveProfile();return}
+ const k=pool[Math.floor(Math.random()*pool.length)];owned.push(k);$('crateResult').innerHTML='NEW FIGHTER UNLOCKED!<br><b>'+H[k].name+'</b><br><span>'+rarity+' · '+H[k].role+'</span>';saveProfile();renderHero()
+}
+$('cratesBtn').onclick=()=>{$('crateScreen').classList.add('show');$('crateResult').textContent='Choose a crate to reveal a fighter.'};
+$('crateClose').onclick=()=>$('crateScreen').classList.remove('show');
+document.querySelectorAll('.crate-option').forEach(btn=>btn.onclick=()=>openCrate(btn.dataset.crate));
+renderHero();updateWallet();
 const cv=$('world'),ctx=cv.getContext('2d'),VW=960,VH=540,WW=2600,WH=1800,clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),rand=(a,b)=>{randomSeed=(randomSeed*1664525+1013904223)>>>0;return a+(randomSeed/4294967296)*(b-a)};
 let player,bots=[],remotePlayers=[],shots,shards,rocks,blue,orange,time,active=false,paused=false,ended=false,last=0,keys={},mouse={x:700,y:260},shooting=false,stick=null,aimStick=null,cam={x:0,y:0},shotType='bolt',touchSticks=new Map(),randomSeed=1;
 let arenaSocket=null,arenaOnline=false,arenaSide=0,arenaInfo=null,playerName='',lastNetAt=0,queueTick=null,queueStartedAt=0,queueWaitMs=12000,queuePlayers=1;
