@@ -456,5 +456,4 @@ addEventListener('pointermove',e=>{const st=touchSticks.get(e.pointerId);if(st)u
 function endTouch(e){const st=touchSticks.get(e.pointerId);if(!st)return;st.el.style.display='none';st.el.querySelector('i').style.transform='';if(st.which==='move')stick=null;else aimStick=null;touchSticks.delete(e.pointerId)}
 addEventListener('pointerup',endTouch);addEventListener('pointercancel',endTouch);
 })();
-})();
 </script></body></html>
