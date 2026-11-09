@@ -206,7 +206,7 @@ class Client {
       case 'end': finished(this); break;
       case 'leave': leave(this); break;
       case 'arena_find': findArena(this, m); break;
-      case 'arena_cancel': leaveArenaQueue(this); break;
+      case 'arena_cancel': leaveArenaQueue(this); this.send({ t: 'arena_cancelled' }); break;
       case 'arena_state': relayArena(this, 'arena_state', m); break;
       case 'arena_shot': relayArena(this, 'arena_shot', m); break;
       case 'arena_leave': leaveArena(this); break;
@@ -261,11 +261,16 @@ function findArena(c, m) {
   }
   arenaWaiting.push(c);
   c.send({ t: 'arena_wait', waitMs: ARENA_WAIT_MS });
+  notifyArenaQueue();
   arenaQueueTimer = setTimeout(() => {
     arenaQueueTimer = null;
     const players = arenaWaiting.splice(0, 2).filter(p => !p.dead);
     if (players.length) startArenaMatch(players);
   }, ARENA_WAIT_MS);
+}
+function notifyArenaQueue() {
+  const update = { t: 'arena_queue', players: arenaWaiting.filter(p => !p.dead).length, maxPlayers: 2, waitMs: ARENA_WAIT_MS };
+  for (const p of arenaWaiting) if (!p.dead) p.send(update);
 }
 function leaveArenaQueue(c) {
   const i = arenaWaiting.indexOf(c);
@@ -274,6 +279,7 @@ function leaveArenaQueue(c) {
     clearTimeout(arenaQueueTimer);
     arenaQueueTimer = null;
   }
+  notifyArenaQueue();
 }
 function startArenaMatch(players) {
   const match = {
