@@ -64,8 +64,67 @@ body{background:#1689c9;color:#fff9e9}
 .mode-row{grid-template-columns:1fr 1fr;gap:7px}.mode-card{padding:8px}.mode-card strong{font-size:10px}.mode-card small{font-size:8px}.playrow{margin-top:10px}.play{padding:12px;width:100%;max-width:420px;font-size:17px}
 .game{padding:7px 5px;min-height:calc(100vh - 50px)}.gamehead{margin-bottom:6px}.stage{border-width:2px}.stage canvas{aspect-ratio:4/3}.mobile{display:flex;bottom:8px;left:9px;right:9px}.stick{width:100px;height:100px}.stick:after{left:27px;top:27px;width:42px;height:42px}.joy-label{font-size:8px}.under{margin-top:6px}
 }
+
+/* Respawn fighter-select lobby: bold, colorful, character-first arcade layout */
+.home{
+ background:
+ radial-gradient(ellipse at 50% 44%,#8de7ed 0,#43b9dc 26%,transparent 58%),
+ radial-gradient(ellipse at 18% 72%,#48a95f 0,#238b59 31%,transparent 58%),
+ radial-gradient(ellipse at 84% 72%,#6dbd53 0,#278b5a 32%,transparent 60%),
+ linear-gradient(180deg,#1686c8 0%,#27a9d5 50%,#176ca6 100%);
+ position:relative;
+}
+.home:before{content:"";position:absolute;inset:auto 0 0;height:34%;background:linear-gradient(180deg,transparent,#0c5c7d55),repeating-linear-gradient(165deg,#ffffff0b 0 2px,transparent 2px 34px);pointer-events:none}
+.home-inner{z-index:1;max-width:1240px;padding:13px 0 20px}
+.homebar{background:linear-gradient(180deg,#0d70b0,#07558f);border:3px solid #75d8f3;border-radius:16px;padding:8px 13px;box-shadow:0 5px 0 #074675,0 9px 18px #063b6266}
+.home-title{margin:10px 0 0}
+.home-title .eyebrow{display:inline-block;padding:4px 12px;background:#0c639e;border:2px solid #a6eaff;border-radius:30px;color:#fff5a7}
+.home-title h1{font-size:clamp(25px,4vw,39px);margin:5px 0 0}
+.home-title p{display:none}
+.feature{display:flex;flex-direction:column;align-items:center;gap:0;max-width:850px;margin:0 auto}
+.hero-stage{width:100%;height:390px;margin:0 auto;display:grid;place-items:center;overflow:visible}
+.hero-stage:before{width:340px;height:48px;bottom:18px;background:#064b6d99;filter:blur(13px)}
+.hero-stage:after{width:330px;height:330px;border:8px solid #ffe16b;background:radial-gradient(circle,#ffffff24,#0a639c12 70%);box-shadow:0 0 0 7px #fff9,0 0 0 18px #ffe16b33,0 10px 0 #995b2d}
+.hero-art{width: min(92%,430px);height:390px;filter:drop-shadow(0 9px 0 #15547a) drop-shadow(0 19px 14px #07385888)}
+.hero-copy{width:min(100%,660px);display:grid;grid-template-columns:1fr 1fr;column-gap:18px;align-items:center;padding:14px 18px;background:linear-gradient(160deg,#fff1b0,#ffc94c);border:3px solid #fff4c4;border-radius:16px;box-shadow:0 5px 0 #b16a29,0 10px 22px #063e65aa}
+.hero-copy .role,.hero-copy h2,.hero-copy p{grid-column:1}
+.hero-copy .role{font-size:11px}
+.hero-copy h2{font-size:30px;margin:1px 0}
+.hero-copy p{font-size:11px;margin:0}
+.hero-copy .stat{grid-column:2;grid-template-columns:55px 1fr 28px;margin:4px 0}
+.hero-copy .hero-switch{grid-column:1 / -1;margin:9px 0 0}
+.hero-pick{padding:9px 4px;font-size:11px}
+.mode-row{max-width:660px;margin:13px auto 0;gap:10px}
+.mode-card{padding:10px 13px}
+.playrow{margin:15px auto 0;flex-direction:column;gap:7px}
+.play{min-width:270px;padding:14px 58px;font-size:20px}
+.tip{font-size:10px;color:#eafaff}
+@media(max-width:760px){
+ .home-inner{width:calc(100% - 18px);padding:9px 0 15px}
+ .homebar{padding:6px 8px;border-radius:12px}
+ .home-title{margin-top:10px}
+ .home-title .eyebrow{font-size:9px;padding:3px 10px}
+ .home-title h1{font-size:clamp(23px,7vw,32px)}
+ .hero-stage{height:clamp(245px,40vh,310px)}
+ .hero-stage:after{width:clamp(205px,58vw,260px);height:clamp(205px,58vw,260px);border-width:6px;box-shadow:0 0 0 5px #fff9,0 0 0 13px #ffe16b33}
+ .hero-art{height:clamp(245px,40vh,310px);width:min(88%,320px)}
+ .hero-copy{padding:10px 12px;grid-template-columns:1fr 1fr;column-gap:9px;border-radius:13px}
+ .hero-copy h2{font-size:23px}
+ .hero-copy p{font-size:10px;line-height:1.25}
+ .hero-copy .stat{grid-template-columns:43px 1fr 23px;font-size:9px;gap:5px}
+ .hero-copy .hero-switch{margin-top:8px}
+ .hero-pick{font-size:9px;padding:8px 2px}
+ .mode-row{margin-top:10px;gap:7px}
+ .mode-card{padding:8px 7px;gap:7px;border-radius:10px}
+ .mode-icon{width:30px;height:30px;font-size:15px}
+ .mode-card strong{font-size:9px}
+ .mode-card small{font-size:8px}
+ .playrow{margin-top:12px}
+ .play{width:100%;max-width:420px;min-width:0;padding:12px;font-size:18px}
+ .tip{font-size:8px;text-align:center}
+}
 </style></head><body>
-<header class="top"><div class="brand">RECESS <b>ARCADE</b> / ARENA RIVALS</div><a class="back" href="/">← All games</a></header>
+<header class="top"><div class="brand">RESPAWN <b>ARENA RIVALS</b></div><a class="back" href="/">← All games</a></header>
 <section id="home" class="screen active home"><div class="home-inner">
 <div class="homebar"><div class="profile"><div class="avatar">R</div><div><strong>Rookie</strong><small>ARENA RANK 1</small></div></div><div class="wallet"><span>✦ 0</span><span>◆ 0</span></div></div>
 <div class="home-title"><div class="eyebrow">Welcome to the arena</div><h1>CHOOSE YOUR RIVAL</h1><p>Pick a fighter. Find the shards. Take control.</p></div>
