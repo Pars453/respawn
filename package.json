@@ -1,9 +1,13 @@
 {
-  "name": "recess-arcade",
+  "name": "respawn",
   "version": "1.1.0",
-  "description": "Recess Arcade portal with Clash of Vikings online and Arena Rivals beta.",
+  "description": "Respawn gaming portal with Clash of Vikings and Arena Rivals.",
   "private": true,
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=16" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
 }
