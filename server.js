@@ -93,7 +93,7 @@ const clients = new Set();
 let waiting = null;                                   // Clash of Vikings queue
 const ARENA_WAIT_MS = 12000;
 const ARENA_MAX_PLAYERS = 10;
-const ARENA_FIGHTERS = new Set(['nova','bramble','zip']);
+const ARENA_FIGHTERS = new Set(['nova','bramble','zip','ember','frost','rook','volt','mako','wisp']);
 let arenaWaiting = [];
 let arenaQueueTimer = null;
 
@@ -323,14 +323,11 @@ function leaveArena(c) {
   const match = c.arenaMatch;
   if (!match) return;
   c.arenaMatch = null;
-  if (match.closed) return;
-  match.closed = true;
-  for (const p of match.players) {
-    if (p !== c && p.arenaMatch === match) {
-      p.arenaMatch = null;
-      if (!p.dead) p.send({ t: 'arena_left', name: c.arenaName });
-    }
-  }
+  const index = match.players.indexOf(c);
+  if (index !== -1) match.players.splice(index, 1);
+  for (const other of match.players) if (!other.dead && other.arenaMatch === match)
+    other.send({ t: 'arena_player_left', side: c.arenaSide, name: c.arenaName });
+  if (!match.players.length) match.closed = true;
 }
 
 function cleanLv(o) {
