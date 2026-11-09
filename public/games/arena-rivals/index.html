@@ -374,9 +374,9 @@ function reset(info){
  const roster=arenaInfo&&arenaInfo.players?arenaInfo.players:Array.from({length:10},(_,side)=>({side,bot:true,name:'Bot',fighter:['nova','bramble','zip'][side%3]}));
  bots=[];remotePlayers=[];player=null;
  for(const entry of roster){
-  const side=entry.side,team=side<5?0:1,lane=side%5;
-  const x=team===0?WW/2-240-lane*18:WW/2+240+lane*18;
-  const y=WH/2+(lane-2)*105;
+  const side=entry.side,angle=(Math.PI*2*side/10)-Math.PI/2;
+  const x=WW/2+Math.cos(angle)*510;
+  const y=WH/2+Math.sin(angle)*510;
   const ent=fighter(side,entry.fighter||'nova',x,y,side);ent.name=entry.name||'Bot';
   if(!entry.bot&&side===arenaSide){player=ent;player.name=playerName||ent.name}
   else if(entry.bot)bots.push(ent);else remotePlayers.push(ent);
