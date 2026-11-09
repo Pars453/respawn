@@ -428,21 +428,24 @@ let arenaSocket=null,arenaOnline=false,arenaSide=0,arenaInfo=null,lastNetAt=0,qu
 const KITS={nova:{ammo:4,reload:1050,range:470,speed:10,pattern:'single'},bramble:{ammo:3,reload:1450,range:330,speed:7,pattern:'thorn'},zip:{ammo:6,reload:1150,range:350,speed:11,pattern:'twin'},ember:{ammo:3,reload:1500,range:720,speed:15,pattern:'sniper'},frost:{ammo:4,reload:1300,range:440,speed:8,pattern:'ice'},rook:{ammo:3,reload:1650,range:400,speed:6,pattern:'shell'},volt:{ammo:5,reload:1250,range:390,speed:12,pattern:'burst'},mako:{ammo:4,reload:1350,range:300,speed:8,pattern:'wave'},wisp:{ammo:4,reload:1450,range:520,speed:9,pattern:'orb'}};
 function fighter(team,type,x,y,side=0){const h=H[type]||H.nova,k=KITS[type]||KITS.nova;return{team,type,x,y,side,r:24,hp:h.hp,max:h.hp,speed:h.speed,damage:h.damage,rate:h.rate,lastShot:0,face:0,skill:0,respawn:0,flash:0,brain:0,goal:null,ammo:k.ammo,maxAmmo:k.ammo,reload:0,shield:0,slow:0,power:0,deadHandled:false,vx:0,vy:0}}
 function spawnPoint(side){const inset=105,perimeter=2*((WW-2*inset)+(WH-2*inset)),d=(side%10)/10*perimeter,w=WW-2*inset,h=WH-2*inset;if(d<w)return{x:inset+d,y:inset};if(d<w+h)return{x:WW-inset,y:inset+d-w};if(d<2*w+h)return{x:WW-inset-(d-w-h),y:WH-inset};return{x:inset,y:WH-inset-(d-2*w-h)}}
+function findSafeSpawn(side,occupied=[]){const base=spawnPoint(side),candidates=[];for(let y=42;y<=WH-42;y+=36)for(let x=42;x<=WW-42;x+=36)candidates.push({x,y,d:Math.hypot(x-base.x,y-base.y)});candidates.sort((a,b)=>a.d-b.d);for(const p of candidates){if(mapCircleBlocked(p.x,p.y,29))continue;if(occupied.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<58))continue;return{x:p.x,y:p.y}}return{x:base.x,y:base.y}}
 function buildWorld(){rocks=[];for(let i=0;i<29;i++){let x=rand(150,WW-150),y=rand(150,WH-150);if(Math.hypot(x-WW/2,y-WH/2)<220||Array.from({length:10},(_,side)=>spawnPoint(side)).some(sp=>Math.hypot(x-sp.x,y-sp.y)<125))continue;rocks.push({x,y,w:rand(55,120),h:rand(48,100),type:i%3})}shards=[];powerBoxes=[];for(let i=0;i<18;i++)spawnPowerBox()}
 function spawnShard(){let p;for(let n=0;n<40;n++){p={x:rand(75,WW-75),y:rand(75,WH-75)};if(!rocks.some(r=>Math.abs(p.x-r.x)<r.w/2+35&&Math.abs(p.y-r.y)<r.h/2+35)&&!powerBoxes.some(r=>Math.abs(p.x-r.x)<35&&Math.abs(p.y-r.y)<35))break}shards.push({...p,spin:rand(0,6)})}
 function spawnPowerBox(x,y){for(let n=0;n<35;n++){const p=x==null?{x:rand(180,WW-180),y:rand(180,WH-180)}:{x,y};if(!rocks.some(r=>Math.abs(p.x-r.x)<r.w/2+34&&Math.abs(p.y-r.y)<r.h/2+34)&&!powerBoxes.some(r=>Math.hypot(p.x-r.x,p.y-r.y)<58)&&!mapCircleBlocked(p.x,p.y,23)&&Array.from({length:10},(_,side)=>spawnPoint(side)).every(sp=>Math.hypot(p.x-sp.x,p.y-sp.y)>125)){powerBoxes.push({...p,hp:55,maxHp:55});return}}}
 function reset(info){
  arenaInfo=info||arenaInfo;arenaOnline=!!arenaInfo;arenaSide=arenaInfo?arenaInfo.side:0;randomSeed=(arenaInfo&&arenaInfo.seed?arenaInfo.seed:1)>>>0;scores=Array(10).fill(0);time=150;shots=[];powerBoxes=[];
+ buildWorld();
+ const occupied=[];
  const roster=arenaInfo&&arenaInfo.players?arenaInfo.players:Array.from({length:10},(_,side)=>({side,bot:true,name:'Bot',fighter:['nova','bramble','zip','ember','frost','rook','volt','mako','wisp'][side%9]}));
  bots=[];remotePlayers=[];player=null;
  for(const entry of roster){
-  const side=entry.side,{x,y}=spawnPoint(side);
+  const side=entry.side,{x,y}=findSafeSpawn(side,occupied);occupied.push({x,y});
   const ent=fighter(side,entry.fighter||'nova',x,y,side);ent.name=entry.name||'Bot';
   if(!entry.bot&&side===arenaSide){player=ent;player.name=playerName||ent.name}
   else if(entry.bot)bots.push(ent);else remotePlayers.push(ent);
  }
- if(!player){const p=spawnPoint(arenaSide);player=fighter(arenaSide,chosen,p.x,p.y,arenaSide)}
- buildWorld();cam.x=clamp(player.x-VW/2,0,WW-VW);cam.y=clamp(player.y-VH/2,0,WH-VH);paused=false;ended=false;active=true;$('home').classList.remove('active');$('game').classList.add('active');$('overlay').classList.remove('show');$('pauseBtn').textContent='Ⅱ Pause';last=performance.now();lastNetAt=0;requestAnimationFrame(loop)
+ if(!player){const p=findSafeSpawn(arenaSide,occupied);player=fighter(arenaSide,chosen,p.x,p.y,arenaSide)}
+ cam.x=clamp(player.x-VW/2,0,WW-VW);cam.y=clamp(player.y-VH/2,0,WH-VH);paused=false;ended=false;active=true;$('home').classList.remove('active');$('game').classList.add('active');$('overlay').classList.remove('show');$('pauseBtn').textContent='Ⅱ Pause';last=performance.now();lastNetAt=0;requestAnimationFrame(loop)
 }
 function circleRectHit(x,y,r,box){const px=clamp(x,box.x-box.w/2,box.x+box.w/2),py=clamp(y,box.y-box.h/2,box.y+box.h/2),dx=x-px,dy=y-py;return dx*dx+dy*dy<r*r}
 function segmentCircleHit(ax,ay,bx,by,cx,cy,r){const dx=bx-ax,dy=by-ay,t=clamp(((cx-ax)*dx+(cy-ay)*dy)/(dx*dx+dy*dy||1),0,1),x=ax+dx*t,y=ay+dy*t;return (x-cx)*(x-cx)+(y-cy)*(y-cy)<=r*r}
