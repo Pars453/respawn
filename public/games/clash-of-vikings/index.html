@@ -389,21 +389,38 @@ h1{font-weight:900;color:var(--ac);text-shadow:0 .08em 0 #06143a,.05em 0 0 #0614
 .tile.lk img{filter:grayscale(1) brightness(.55)}
 @media(prefers-reduced-motion:reduce){.eb i::before,.cd i,.cd.q-l::before,.ks.q-l .kc,#ov.gx-win::before,.gx-cf,#ov.gx-win .pnl h2,#ov.gx-lose .pnl h2{animation:none}}
 
-/* Unified warm-stone and forest-green interface. Battlefield art/gameplay stays intact. */
-:root{color-scheme:light;--bg:#f4f3ee;--pn:#fff;--p2:#e8ede7;--mu:#707b73;--ac:#42634f;--rd:#b85f55;--gr:#64836c}
-html,body{color:#26332d;background:var(--bg)}.scr{background:var(--bg)}
-h1{color:#42634f;text-shadow:none;font-weight:750;letter-spacing:-1px}.sub,.mu{color:var(--mu)}
-.btn{background:#e8ede7;color:#26332d;box-shadow:none;border:1px solid #e0e5de;border-radius:9px;font-weight:650}.btn:hover{background:#dfe7de;transform:none}.pri,.pri:hover{background:#42634f;color:#fff;box-shadow:none}
-.pill{background:#fff;color:#26332d;box-shadow:none;border:1px solid #e2e5df}.pill b{color:#42634f}
-.tile{background:#fff;color:#26332d;box-shadow:none;border:1px solid #e2e5df;border-radius:10px}.tile:hover{transform:none}.tile.in{outline:2px solid #64836c}
-.pnl{background:#fff;color:#26332d;border:1px solid #e2e5df;box-shadow:0 8px 28px #26332d18;border-radius:14px}.pnl h2{color:#42634f;text-shadow:none}
-.topbar{background:#fff;border-bottom:1px solid #e2e5df;color:#26332d}.avatar{background:#e8ede7;border:1px solid #d7dfd6;color:#42634f;border-radius:9px}.avatar b{background:#42634f;border:1px solid #fff}.pl{background:#f4f3ee;border:1px solid #e2e5df;color:#26332d;border-radius:8px}.xb small{color:#707b73}.bar{background:#e8ede7;border:1px solid #d7dfd6}.bar i{background:#64836c}
-.nav{background:#fff;border-top:1px solid #e2e5df}.nav .tab{color:#707b73}.nav .tab.on{background:#e8ede7;color:#304b3a;border-radius:8px 8px 0 0;transform:none}.nav .tab.on i{color:#42634f}
-.hub .panel,.panel{background:#fff;border:1px solid #e2e5df;box-shadow:none;border-radius:12px;color:#26332d}
-.bgo,.evb,.bdk,.bem,.ib{background:#e8ede7;color:#304b3a;border:1px solid #dce4db;box-shadow:none}.bgo:active,.evb:active{transform:none}
-#top,#bot{background:#e8ede7;color:#26332d;border-color:#dce4db}.ib{background:#fff;color:#304b3a}
-.cd{background:#f2f4ef;border:1px solid #dce4db;box-shadow:none}.cd i{background:#64836c;color:#fff}.eb{background:#dfe5dd}.eb i{background:#64836c}
-#ov{background:#26332d88;backdrop-filter:blur(2px)}.foil{background:#e8ede7}
+/* Unified dark-navy and gold game theme. Keep the blue arena artwork intact. */
+:root{color-scheme:dark;--bg:#0d1420;--pn:#182234;--p2:#223149;--mu:#a9bdd9;--ac:#ffd15c;--rd:#ef6262;--gr:#53d6a0}
+html,body{color:#f4f7ff;background:#0d1420;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+.scr{background:radial-gradient(circle at 50% -12%,#244b83 0%,#12346a 38%,#0b1d43 100%);color:#f4f7ff}
+h1{color:#ffd15c;text-shadow:0 2px 0 #70450b,0 4px 12px #0008;font-weight:900;letter-spacing:-.4px}
+.sub,.mu{color:#b7c9e8}
+.btn{background:linear-gradient(#315b96,#1b3768);color:#fff;box-shadow:inset 0 1px 0 #ffffff35,0 3px 0 #08142d,0 6px 14px #0006;border:1px solid #5b8bd0;border-radius:13px;font-weight:800}
+.btn:hover{background:linear-gradient(#3c70b4,#234985);transform:translateY(-1px)}
+.pri,.pri:hover{background:linear-gradient(#ffe27a,#e9a92d);color:#382000;border:1px solid #fff0a8;box-shadow:inset 0 1px 0 #fff9,0 3px 0 #80500c,0 6px 14px #0006}
+.pill{background:linear-gradient(#203c68,#12294e);color:#f4f7ff;box-shadow:inset 0 1px 0 #ffffff20,0 2px 6px #0006;border:1px solid #527dbb}
+.pill b{color:#ffd15c}
+.tile{background:linear-gradient(#254879,#142d53);color:#f4f7ff;box-shadow:0 3px 9px #0006;border:1px solid #527dbb;border-radius:12px}
+.tile:hover{transform:translateY(-2px)}.tile.in{outline:2px solid #53d6a0}
+.pnl{background:linear-gradient(145deg,#1b355d,#101f3b);color:#f4f7ff;border:1px solid #527dbb;box-shadow:0 8px 28px #0008;border-radius:16px}.pnl h2{color:#ffd15c;text-shadow:0 2px 0 #70450b}
+.topbar{background:linear-gradient(#203e6b,#13294c);border-bottom:2px solid #527dbb;color:#f4f7ff}
+.avatar{background:linear-gradient(145deg,#ffe27a,#e9a92d);border:2px solid #fff0a8;color:#382000;border-radius:11px}
+.avatar b{background:#7045b5;border:2px solid #ffe27a}
+.pl{background:#0d2042;border:1px solid #527dbb;color:#fff;border-radius:9px}
+.xb small{color:#b7c9e8}.bar{background:#0a1a38;border:1px solid #527dbb}.bar i{background:linear-gradient(90deg,#44d5f3,#2585ed)}
+.nav{background:linear-gradient(#19365f,#0d2040);border-top:2px solid #527dbb}
+.nav .tab{color:#b7c9e8}.nav .tab.on{background:linear-gradient(#ffe27a,#e9a92d);color:#382000;border-radius:10px 10px 0 0;transform:translateY(-3px)}
+.nav .tab.on i{color:#382000}
+.hub .panel,.panel{background:linear-gradient(145deg,#1b355d,#101f3b);border:1px solid #527dbb;box-shadow:0 5px 16px #0006;border-radius:14px;color:#f4f7ff}
+.bgo,.evb,.bdk,.bem,.ib{background:linear-gradient(#3976c5,#17458c);color:#fff;border:2px solid #9bc9ff;box-shadow:inset 0 1px 0 #ffffff55,0 3px 0 #081b3b,0 6px 12px #0006}
+.bgo:active,.evb:active{transform:translateY(1px)}
+#top,#bot{background:linear-gradient(#19365f,#10264a);color:#f4f7ff;border-color:#527dbb}
+.ib{background:linear-gradient(#3976c5,#17458c);color:#fff}
+.cd{background:linear-gradient(#315b96,#172f57);border:2px solid #527dbb;box-shadow:0 3px 0 #08142d}
+.cd i{background:#a64ce0;color:#fff}
+.eb{background:#081a39;border:1px solid #527dbb}.eb i{background:linear-gradient(90deg,#38c9f0,#277de3)}
+#ov{background:#020916bb;backdrop-filter:blur(3px)}.foil{background:linear-gradient(115deg,#35255f,#6a35a8 35%,#1f6b8c 65%,#35255f)}
 </style></head><body>
 <div id=menu class="scr on"></div><div id=cards class=scr></div><div id=shop class=scr></div><div id=road class=scr></div>
 <div id=game class=scr><div id=gw class=one><div id=top><div class=hud><button id=pz class=ib data-a=pz>II</button><b id=tm>3:00</b><span id=cr>0 - 0</span></div><div id=matchnames class=mu style='text-align:center;font-size:11rem;min-height:13rem'> </div><div class=eb id=eb1><i></i><b></b></div><div class=hand id=h1></div></div><canvas id=cv></canvas><div id=bot><div class=eb id=eb0><i></i><b></b></div><div id=emoteUI class=emote-ui><button id=emoteToggle class=emote-toggle title='Send emote'>🙂</button><span class=mu>Emotes</span><div id=emoteTray class=emote-tray></div></div><div class=hand id=h0></div></div></div><div id=emoteToast class=emote-toast></div><div id=ov></div></div><div id=mo></div>
