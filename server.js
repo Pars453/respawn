@@ -1,6 +1,6 @@
 'use strict';
 /*
- * Clash of Vikings - game + online matchmaking server.
+ * Respawn - gaming portal and online matchmaking server.
  *
  * Zero dependencies: only Node built-ins, so there is NO node_modules and
  * nothing to `npm install`.  Needs Node 14 or newer.
@@ -386,7 +386,7 @@ server.on('error', (e) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Clash of Vikings server is running');
+  console.log('Respawn server is running');
   console.log('  This computer : http://localhost:' + PORT);
   for (const list of Object.values(os.networkInterfaces())) {
     for (const i of list || []) {
