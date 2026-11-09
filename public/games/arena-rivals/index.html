@@ -288,7 +288,17 @@ volt:{name:'Volt',role:'BURST ASSASSIN',desc:'A high-mobility fighter who relies
 mako:{name:'Mako',role:'CLOSE-RANGE BRAWLER',desc:'A daring close-range fighter with strong burst damage when opponents get too close.',hp:108,speed:3.05,damage:19,rate:380,color:'#55b7a8',dark:'#245b60',cloth:'#367f78',accent:'#baf5df',rarity:'EPIC',weapon:'tide'},
 wisp:{name:'Wisp',role:'TRICKSTER',desc:'A slippery trickster who trades durability for speed and unpredictable engagements.',hp:88,speed:3.85,damage:17,rate:355,color:'#bca1ed',dark:'#57447e',cloth:'#7661a0',accent:'#f0dcff',rarity:'MYTHIC',weapon:'arc'}};
 let chosen=owned.includes(savedProfile.chosen)?savedProfile.chosen:'nova';
-function heroSvg(k){const h=H[k],heavy=k==='bramble',quick=k==='zip';return `
+function heroSvg(k){const h=H[k],heavy=k==='bramble',quick=k==='zip';
+const gear=heavy?'<path d="M72 182 Q44 198 52 241 Q68 267 98 253 L110 216Z" fill="#66864d" stroke="#233b2d" stroke-width="8"/><path d="M61 204 Q82 192 98 214 M61 229 Q82 239 99 225" stroke="#d5e4a1" stroke-width="5" fill="none"/>':
+quick?'<path d="M270 235 L310 194 L318 203 L284 252Z" fill="#d7e0e5" stroke="#38444b" stroke-width="5"/><path d="M306 191 L326 175" stroke="#f2d28a" stroke-width="8" stroke-linecap="round"/>':
+k==='ember'?'<path d="M270 238 L322 178 L329 185 L281 250Z" fill="#d7e0e5" stroke="#743b31" stroke-width="6"/><path d="M309 193 L326 174" stroke="#ffd08a" stroke-width="8" stroke-linecap="round"/>':
+k==='frost'?'<path d="M275 249 L302 185 L309 190 L286 256Z" fill="#b8f4ff" stroke="#315f83" stroke-width="6"/><path d="M302 185 L302 165 L315 179 L302 185 L289 179Z" fill="#e5fbff" stroke="#4b9ebc" stroke-width="3"/>':
+k==='rook'?'<path d="M273 225 L315 191 L322 199 L281 239Z" fill="#9ca6b3" stroke="#414d5d" stroke-width="6"/><path d="M310 180 L333 174 L336 198 L313 205Z" fill="#f2d49a" stroke="#414d5d" stroke-width="5"/>':
+k==='volt'?'<path d="M267 239 L299 203 L304 208 L275 247Z M285 250 L318 211 L323 217 L293 257Z" fill="#fff4a1" stroke="#6b632a" stroke-width="5"/>':
+k==='mako'?'<path d="M274 245 L311 184 L318 188 L282 251Z" fill="#baf5df" stroke="#245b60" stroke-width="6"/><path d="M311 184 L302 166 L318 175 L330 164 L325 187Z" fill="#55b7a8" stroke="#245b60" stroke-width="4"/>':
+k==='wisp'?'<path d="M275 230 L309 190 L315 196 L282 240Z" fill="#f0dcff" stroke="#57447e" stroke-width="5"/><circle cx="313" cy="185" r="15" fill="#bca1ed" stroke="#57447e" stroke-width="5"/><circle cx="313" cy="185" r="5" fill="#fff"/>':
+'<circle cx="279" cy="229" r="22" fill="#4fc1dc" stroke="#1c536d" stroke-width="7"/><circle cx="279" cy="229" r="10" fill="#d8f7ff" stroke="#fff" stroke-width="3"/><path d="M267 216 L291 242 M291 216 L267 242" stroke="#fff" stroke-width="3"/>';
+return `
 <defs>
  <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#fff4d9"/><stop offset=".35" stop-color="${h.accent}"/><stop offset="1" stop-color="#8a7048"/></linearGradient>
  <linearGradient id="cloth" x2=".2" y2="1"><stop stop-color="${h.color}"/><stop offset="1" stop-color="${h.dark}"/></linearGradient>
@@ -335,7 +345,7 @@ function heroSvg(k){const h=H[k],heavy=k==='bramble',quick=k==='zip';return `
 <path d="M146 63 Q175 30 213 57" fill="none" stroke="${h.accent}" stroke-width="7" stroke-linecap="round"/>
 ${heavy?'<path d="M136 52 L111 26 L145 36 L160 12 L177 36 L199 11 L207 40 L239 24 L219 64Z" fill="#6f8d4d" stroke="#253b2b" stroke-width="7"/><path d="M146 45 L161 31 M205 42 L222 33" stroke="#d8e7a1" stroke-width="5"/>':quick?'<path d="M139 58 L117 34 L152 42 L177 9 L194 42 L229 24 L215 63Z" fill="#d49b4a" stroke="#713f32" stroke-width="7"/>':'<path d="M145 56 Q180 22 217 53 L211 72 L193 62 L180 73 L163 61 L149 75Z" fill="#d9e2e2" stroke="#31414a" stroke-width="6"/><path d="M180 30 L180 60" stroke="#f5dca3" stroke-width="5"/>'}
 <!-- character-specific gear -->
-${heavy?'<path d="M72 182 Q44 198 52 241 Q68 267 98 253 L110 216Z" fill="#66864d" stroke="#233b2d" stroke-width="8"/><path d="M61 204 Q82 192 98 214 M61 229 Q82 239 99 225" stroke="#d5e4a1" stroke-width="5" fill="none"/>':quick?'<path d="M270 235 L310 194 L318 203 L284 252Z" fill="#d7e0e5" stroke="#38444b" stroke-width="5"/><path d="M306 191 L326 175" stroke="#f2d28a" stroke-width="8" stroke-linecap="round"/>':'<circle cx="279" cy="229" r="22" fill="#4fc1dc" stroke="#1c536d" stroke-width="7"/><circle cx="279" cy="229" r="10" fill="#d8f7ff" stroke="#fff" stroke-width="3"/><path d="M267 216 L291 242 M291 216 L267 242" stroke="#fff" stroke-width="3"/>'}
+${gear}
 <!-- leather straps, rivets and cloth details -->
 <path d="M139 171 L217 262 M220 172 L145 258" stroke="#4b382a" stroke-width="7" opacity=".8"/>
 <path d="M139 171 L217 262 M220 172 L145 258" stroke="#d7b879" stroke-width="2.5" opacity=".9"/>
