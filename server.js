@@ -295,7 +295,7 @@ function startArenaMatch(players) {
     const p = match.players[side];
     return p
       ? { name: p.arenaName, fighter: p.arenaFighter, side, bot: false }
-      : { name: ['Guard','Scout','Ranger','Vanguard','Striker'][side % 5] + ' Bot', fighter: ['nova','bramble','zip'][side % 3], side, bot: true };
+      : { name: ['Guard','Scout','Ranger','Vanguard','Striker'][side % 5] + ' Bot', fighter: ['nova','bramble','zip','ember','frost','rook','volt','mako','wisp'][side % 9], side, bot: true };
   });
   match.players.forEach((p, side) => p.send({
     t: 'arena_start', matchId: match.id, seed: match.seed, side,
