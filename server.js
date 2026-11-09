@@ -307,10 +307,10 @@ function relayArena(c, type, m) {
   const match = c.arenaMatch;
   if (!match || match.closed) return;
   if (type === 'arena_state') {
-    const x = Number(m.x), y = Number(m.y), hp = Number(m.hp), face = Number(m.face);
+    const x = Number(m.x), y = Number(m.y), hp = Number(m.hp), max = Number(m.max), power = Number(m.power), face = Number(m.face);
     if (![x,y,hp,face].every(Number.isFinite) || x < 0 || x > 2600 || y < 0 || y > 1800) return;
     for (const other of match.players) if (other !== c && !other.dead && other.arenaMatch === match)
-      other.send({ t: type, side: c.arenaSide, x, y, hp: Math.max(0, Math.min(200, hp)), face, name: c.arenaName });
+      other.send({ t: type, side: c.arenaSide, x, y, hp: Math.max(0, Math.min(400, hp)), max: Number.isFinite(max) ? Math.max(1, Math.min(400, max)) : 120, power: Number.isFinite(power) ? Math.max(0, Math.min(20, Math.floor(power))) : 0, face, name: c.arenaName });
   } else {
     const x=Number(m.x), y=Number(m.y), vx=Number(m.vx), vy=Number(m.vy), damage=Number(m.damage), shotType=String(m.shotType||'bolt');
     if (![x,y,vx,vy,damage].every(Number.isFinite) || Math.abs(vx)>20 || Math.abs(vy)>20 || damage<1 || damage>60 || !['bolt','spread','heavy'].includes(shotType)) return;
