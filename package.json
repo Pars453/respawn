@@ -1,13 +1,9 @@
 {
-  "name": "clash-of-vikings",
-  "version": "1.0.0",
-  "description": "Clash of Vikings with online 1v1. No dependencies: nothing to install.",
+  "name": "recess-arcade",
+  "version": "1.1.0",
+  "description": "Recess Arcade portal with Clash of Vikings online and Arena Rivals beta.",
   "private": true,
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "engines": {
-    "node": ">=16"
-  }
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=16" }
 }

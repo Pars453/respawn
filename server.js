@@ -22,7 +22,7 @@ const path = require('path');
 
 const PORT = Number(process.env.PORT) || 3000;
 const TURN_MS = Number(process.env.TURN_MS) || 50;     // one turn = 3 game ticks of 1/60 s
-const GAME_FILE = path.join(__dirname, 'index.html');
+const PUBLIC_DIR = path.join(__dirname, 'public');
 const MAX_MATCH_MS = 6 * 60 * 1000;                    // a battle lasts 3 minutes; this is only a safety net
 const END_GRACE_MS = 20 * 1000;                        // keep feeding turns to a player who is still catching up
 const MAX_MSG = 16 * 1024;
@@ -35,25 +35,44 @@ const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
 /* ---------------------------------------------------------------- HTTP */
 
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml', '.ico': 'image/x-icon'
+};
+
 const server = http.createServer((req, res) => {
-  const url = (req.url || '/').split('?')[0];
-  if (url === '/' || url === '/index.html') {
-    fs.readFile(GAME_FILE, (err, buf) => {
-      if (err) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('index.html must be in the same folder as server.js');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
-      res.end(buf);
-    });
-  } else if (url === '/healthz') {
+  let pathname;
+  try { pathname = decodeURIComponent((req.url || '/').split('?')[0]); }
+  catch (_) { res.writeHead(400); res.end('Bad request'); return; }
+
+  if (pathname === '/healthz') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('ok');
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not found');
+    return;
   }
+
+  const requestPath = pathname.endsWith('/') ? pathname + 'index.html' : pathname;
+  const filePath = path.resolve(PUBLIC_DIR, '.' + requestPath);
+  if (filePath !== PUBLIC_DIR && !filePath.startsWith(PUBLIC_DIR + path.sep)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
+    return;
+  }
+
+  fs.readFile(filePath, (err, buf) => {
+    if (err) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Not found');
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+      'Cache-Control': 'no-cache'
+    });
+    res.end(buf);
+  });
 });
 
 /* ----------------------------------------------- minimal WebSocket (RFC 6455) */
