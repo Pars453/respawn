@@ -92,6 +92,7 @@ const PING = frame(0x9, Buffer.alloc(0));
 const clients = new Set();
 let waiting = null;                                   // Clash of Vikings queue
 const ARENA_WAIT_MS = 12000;
+const ARENA_MAX_PLAYERS = 10;
 const ARENA_FIGHTERS = new Set(['nova','bramble','zip']);
 let arenaWaiting = [];
 let arenaQueueTimer = null;
@@ -252,70 +253,69 @@ function findArena(c, m) {
   leaveArenaQueue(c);
   c.arenaName = cleanArenaName(m.name);
   c.arenaFighter = ARENA_FIGHTERS.has(m.fighter) ? m.fighter : 'nova';
-  if (arenaWaiting.length >= 1) {
-    const first = arenaWaiting.shift();
-    clearTimeout(arenaQueueTimer);
-    arenaQueueTimer = null;
-    startArenaMatch([first, c]);
-    return;
-  }
+  if (arenaWaiting.includes(c)) return;
   arenaWaiting.push(c);
-  c.send({ t: 'arena_wait', waitMs: ARENA_WAIT_MS });
+  c.send({ t: 'arena_wait', waitMs: ARENA_WAIT_MS, maxPlayers: ARENA_MAX_PLAYERS });
   notifyArenaQueue();
-  arenaQueueTimer = setTimeout(() => {
-    arenaQueueTimer = null;
-    const players = arenaWaiting.splice(0, 2).filter(p => !p.dead);
-    if (players.length) startArenaMatch(players);
-  }, ARENA_WAIT_MS);
+  if (arenaWaiting.length >= ARENA_MAX_PLAYERS) {
+    const players = arenaWaiting.splice(0, ARENA_MAX_PLAYERS).filter(p => !p.dead);
+    clearTimeout(arenaQueueTimer); arenaQueueTimer = null;
+    startArenaMatch(players);
+  } else if (!arenaQueueTimer) {
+    arenaQueueTimer = setTimeout(() => {
+      arenaQueueTimer = null;
+      const players = arenaWaiting.splice(0, ARENA_MAX_PLAYERS).filter(p => !p.dead);
+      if (players.length) startArenaMatch(players);
+    }, ARENA_WAIT_MS);
+  }
 }
 function notifyArenaQueue() {
-  const update = { t: 'arena_queue', players: arenaWaiting.filter(p => !p.dead).length, maxPlayers: 2, waitMs: ARENA_WAIT_MS };
+  const update = { t: 'arena_queue', players: arenaWaiting.filter(p => !p.dead).length, maxPlayers: ARENA_MAX_PLAYERS, waitMs: ARENA_WAIT_MS };
   for (const p of arenaWaiting) if (!p.dead) p.send(update);
 }
 function leaveArenaQueue(c) {
   const i = arenaWaiting.indexOf(c);
   if (i !== -1) arenaWaiting.splice(i, 1);
   if (!arenaWaiting.length && arenaQueueTimer) {
-    clearTimeout(arenaQueueTimer);
-    arenaQueueTimer = null;
+    clearTimeout(arenaQueueTimer); arenaQueueTimer = null;
   }
   notifyArenaQueue();
 }
 function startArenaMatch(players) {
+  const matchPlayers = players.slice(0, ARENA_MAX_PLAYERS);
   const match = {
     id: crypto.randomBytes(8).toString('hex'),
-    players: players.slice(0, 2),
+    players: matchPlayers,
     seed: 1 + Math.floor(Math.random() * 0x7fffffff),
     startedAt: Date.now(),
     closed: false
   };
-  match.players.forEach((p, side) => {
-    p.arenaMatch = match;
-    p.arenaSide = side;
+  match.players.forEach((p, side) => { p.arenaMatch = match; p.arenaSide = side; });
+  const roster = Array.from({length: ARENA_MAX_PLAYERS}, (_, side) => {
+    const p = match.players[side];
+    return p
+      ? { name: p.arenaName, fighter: p.arenaFighter, side, bot: false }
+      : { name: ['Guard','Scout','Ranger','Vanguard','Striker'][side % 5] + ' Bot', fighter: ['nova','bramble','zip'][side % 3], side, bot: true };
   });
-  const roster = [
-    ...match.players.map((p, side) => ({ name: p.arenaName, fighter: p.arenaFighter, side, bot: false })),
-    ...(match.players.length < 2 ? [{ name: 'Arena Bot', fighter: 'bramble', side: 1, bot: true }] : [])
-  ];
   match.players.forEach((p, side) => p.send({
     t: 'arena_start', matchId: match.id, seed: match.seed, side,
-    name: p.arenaName, opponent: match.players[1 - side]?.arenaName || 'Arena Bot',
-    players: roster, botSlots: match.players.length === 1 ? 3 : 2
+    name: p.arenaName, players: roster, realPlayers: match.players.length,
+    maxPlayers: ARENA_MAX_PLAYERS, botSlots: ARENA_MAX_PLAYERS - match.players.length
   }));
 }
 function relayArena(c, type, m) {
   const match = c.arenaMatch;
   if (!match || match.closed) return;
-  const other = match.players[1 - c.arenaSide];
-  if (!other || other.dead || other.arenaMatch !== match) return;
   if (type === 'arena_state') {
     const x = Number(m.x), y = Number(m.y), hp = Number(m.hp), face = Number(m.face);
     if (![x,y,hp,face].every(Number.isFinite) || x < 0 || x > 2600 || y < 0 || y > 1800) return;
-    other.send({ t: type, side: c.arenaSide, x, y, hp: Math.max(0, Math.min(200, hp)), face, name: c.arenaName });
+    for (const other of match.players) if (other !== c && !other.dead && other.arenaMatch === match)
+      other.send({ t: type, side: c.arenaSide, x, y, hp: Math.max(0, Math.min(200, hp)), face, name: c.arenaName });
   } else {
-    const x=Number(m.x), y=Number(m.y), vx=Number(m.vx), vy=Number(m.vy), damage=Number(m.damage);
-    if (![x,y,vx,vy,damage].every(Number.isFinite) || Math.abs(vx)>20 || Math.abs(vy)>20 || damage<1 || damage>50) return;
-    other.send({ t: type, side: c.arenaSide, x, y, vx, vy, damage });
+    const x=Number(m.x), y=Number(m.y), vx=Number(m.vx), vy=Number(m.vy), damage=Number(m.damage), shotType=String(m.shotType||'bolt');
+    if (![x,y,vx,vy,damage].every(Number.isFinite) || Math.abs(vx)>20 || Math.abs(vy)>20 || damage<1 || damage>60 || !['bolt','spread','heavy'].includes(shotType)) return;
+    for (const other of match.players) if (other !== c && !other.dead && other.arenaMatch === match)
+      other.send({ t: type, side: c.arenaSide, x, y, vx, vy, damage, shotType });
   }
 }
 function leaveArena(c) {
@@ -328,7 +328,7 @@ function leaveArena(c) {
   for (const p of match.players) {
     if (p !== c && p.arenaMatch === match) {
       p.arenaMatch = null;
-      if (!p.dead) p.send({ t: 'arena_left' });
+      if (!p.dead) p.send({ t: 'arena_left', name: c.arenaName });
     }
   }
 }
