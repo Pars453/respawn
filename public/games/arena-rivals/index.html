@@ -123,18 +123,99 @@ body{background:#1689c9;color:#fff9e9}
  .play{width:100%;max-width:420px;min-width:0;padding:12px;font-size:18px}
  .tip{font-size:8px;text-align:center}
 }
+
+/* Brawler-style lobby layout: fighter is the focus, selectors and battle controls sit below */
+.home{min-height:calc(100vh - 62px);background:radial-gradient(ellipse at 50% 42%,#68d8e7 0,#31b4d8 30%,transparent 61%),linear-gradient(180deg,#1686c8 0%,#239dcc 53%,#12649f 100%)}
+.home-inner{max-width:1160px;min-height:calc(100vh - 62px);padding:12px 0 16px;display:flex;flex-direction:column}
+.homebar{flex:0 0 auto}
+.home-title{margin:9px 0 0}
+.home-title .eyebrow{display:inline-block;padding:3px 12px;border-radius:20px;background:#075d9b;border:2px solid #a8eaff;color:#fff3a1}
+.home-title h1{font-size:clamp(24px,3.5vw,36px);margin:5px 0 0}
+.feature{flex:1;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;max-width:850px;margin:0 auto;width:100%}
+.hero-stage{width:100%;height:clamp(275px,43vh,390px);display:grid;place-items:center;position:relative}
+.hero-stage:before{width:310px;height:42px;bottom:13px;background:#06496caa;filter:blur(14px)}
+.hero-stage:after{width:clamp(250px,31vw,330px);height:clamp(250px,31vw,330px);border:8px solid #ffe16b;background:radial-gradient(circle,#ffffff25,#0a639c12 70%);box-shadow:0 0 0 7px #fff9,0 0 0 18px #ffe16b33,0 9px 0 #995b2d}
+.hero-art{width:min(90%,390px);height:100%;max-height:390px;filter:drop-shadow(0 9px 0 #15547a) drop-shadow(0 19px 14px #07385888)}
+.hero-copy{width:min(100%,640px);display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:14px;padding:11px 17px;background:linear-gradient(160deg,#fff1b0,#ffc94c);border:3px solid #fff4c4;border-radius:15px;box-shadow:0 5px 0 #b16a29,0 10px 22px #063e65aa}
+.hero-info .role{color:#a45b24;font-size:10px;font-weight:950;letter-spacing:1px}
+.hero-info h2{color:#6d3b23;font-size:25px;margin:1px 0}
+.hero-info p{color:#77583c;font-size:10px;margin:0;line-height:1.3}
+.hero-stats .stat{grid-template-columns:55px 1fr 25px;margin:5px 0;color:#684b32;font-size:9px;gap:6px}
+.fighter-dock{width:min(100%,640px);margin:12px auto 0}
+.dock-label{text-align:center;font-size:9px;font-weight:950;letter-spacing:1.6px;color:#e8f8ff;margin-bottom:6px;text-shadow:0 1px 2px #06446c}
+.hero-switch{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:0}
+.hero-pick{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;background:linear-gradient(#0e73b3,#09558f);border:2px solid #70d3f3;border-radius:11px;color:#fff;font-size:11px;font-weight:950;box-shadow:0 4px 0 #064475}
+.hero-pick.selected{background:linear-gradient(#ffe67a,#ffbd3d);border-color:#fff2a7;color:#684019;box-shadow:0 4px 0 #a96726}
+.pick-icon{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:14px;font-weight:1000;border:2px solid #ffffff9c}
+.nova-icon{background:#4fc1dc;color:#104d66}.bramble-icon{background:#7fba70;color:#274b2c}.zip-icon{background:#edbd54;color:#714323}
+.battle-dock{width:min(100%,640px);margin:12px auto 0;display:grid;grid-template-columns:minmax(190px,.8fr) minmax(250px,1.2fr);align-items:center;gap:12px}
+.battle-dock .mode-card{padding:10px 12px;background:#0f69a6;border:2px solid #65cef0;border-radius:12px;box-shadow:0 4px 0 #084879}
+.battle-dock .mode-icon{background:#ffe16b;color:#75451e}
+.battle-dock .mode-card strong{font-size:11px}.battle-dock .mode-card small{font-size:9px;color:#d7f2ff}
+.battle-dock .playrow{margin:0;display:flex;flex-direction:column;gap:7px}
+.battle-dock .play{width:100%;min-width:0;padding:13px 18px;font-size:22px;letter-spacing:1.4px;background:linear-gradient(#ffe66a,#ffb92e);color:#693c1a;border:3px solid #fff1a1;border-radius:12px;box-shadow:0 5px 0 #a85e23,0 8px 0 #75451d,0 12px 20px #063c65aa}
+.battle-dock .tip{font-size:8px;color:#eafaff;text-align:center}
+@media(max-width:760px){
+ .home{min-height:calc(100svh - 50px)}
+ .home-inner{min-height:calc(100svh - 50px);width:calc(100% - 18px);padding:8px 0 12px}
+ .home-title{margin-top:8px}
+ .home-title h1{font-size:clamp(22px,6.5vw,30px)}
+ .feature{flex:1;min-height:0;gap:0}
+ .hero-stage{height:clamp(215px,32svh,285px)}
+ .hero-stage:after{width:clamp(195px,54vw,245px);height:clamp(195px,54vw,245px);border-width:6px;box-shadow:0 0 0 5px #fff9,0 0 0 13px #ffe16b33}
+ .hero-art{height:100%;width:min(88%,285px)}
+ .hero-copy{grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px;border-radius:12px}
+ .hero-info h2{font-size:20px}.hero-info p{font-size:9px}
+ .hero-stats .stat{grid-template-columns:40px 1fr 21px;font-size:8px;gap:4px;margin:4px 0}
+ .fighter-dock{margin-top:10px}
+ .hero-switch{gap:6px}
+ .hero-pick{padding:7px 3px;gap:5px;font-size:9px;border-radius:9px}
+ .pick-icon{width:22px;height:22px;font-size:11px;border-radius:6px}
+ .battle-dock{grid-template-columns:1fr 1.15fr;gap:7px;margin-top:10px}
+ .battle-dock .mode-card{padding:8px 6px;gap:6px}
+ .battle-dock .mode-icon{width:29px;height:29px;font-size:14px}
+ .battle-dock .mode-card strong{font-size:8px}.battle-dock .mode-card small{font-size:7px}
+ .battle-dock .play{font-size:18px;padding:10px 6px}
+ .battle-dock .tip{font-size:7px}
+}
+@media(max-height:720px) and (min-width:761px){
+ .home-inner{padding-top:7px;padding-bottom:9px}
+ .hero-stage{height:clamp(210px,36vh,300px)}
+ .hero-art{max-height:300px}
+ .fighter-dock,.battle-dock{margin-top:8px}
+}
 </style></head><body>
 <header class="top"><div class="brand">RESPAWN <b>ARENA RIVALS</b></div><a class="back" href="/">← All games</a></header>
 <section id="home" class="screen active home"><div class="home-inner">
-<div class="homebar"><div class="profile"><div class="avatar">R</div><div><strong>Rookie</strong><small>ARENA RANK 1</small></div></div><div class="wallet"><span>✦ 0</span><span>◆ 0</span></div></div>
-<div class="home-title"><div class="eyebrow">Welcome to the arena</div><h1>CHOOSE YOUR RIVAL</h1><p>Pick a fighter. Find the shards. Take control.</p></div>
-<div class="feature"><div class="hero-stage"><svg id="heroArt" class="hero-art" viewBox="0 0 360 390" role="img" aria-label="Selected fighter illustration"></svg></div>
-<div class="hero-copy"><div class="role" id="heroRole">ALL-ROUND FIGHTER</div><h2 id="heroName">NOVA</h2><p id="heroDesc">A disciplined arena guardian with a powerful pulse burst.</p>
-<div class="stat"><span>HEALTH</span><div class="meter"><i id="healthMeter" style="width:70%"></i></div><b id="healthNum">100</b></div><div class="stat"><span>SPEED</span><div class="meter"><i id="speedMeter" style="width:65%"></i></div><b id="speedNum">3</b></div><div class="stat"><span>POWER</span><div class="meter"><i id="powerMeter" style="width:60%"></i></div><b id="powerNum">17</b></div>
-<div class="hero-switch"><button class="hero-pick selected" data-hero="nova">NOVA</button><button class="hero-pick" data-hero="bramble">BRAMBLE</button><button class="hero-pick" data-hero="zip">ZIP</button></div></div></div>
-<div class="mode-row"><div class="mode-card active"><div class="mode-icon">◆</div><div><strong>SHARD SCRAMBLE</strong><small>Collect shards · 2 minutes</small></div></div><div class="mode-card"><div class="mode-icon">⚔</div><div><strong>TEAM BATTLE</strong><small>3v3 · Training match</small></div></div></div>
-<div class="playrow"><button class="play" id="playBtn">▶ &nbsp; PLAY</button><span class="tip">WASD / ARROWS TO MOVE · MOUSE TO AIM · E FOR SPECIAL</span></div>
-</div></section>
+<div class="homebar">
+ <div class="profile"><div class="avatar">R</div><div><strong>Rookie</strong><small>ARENA RANK 1</small></div></div>
+ <div class="wallet"><span>✦ 0</span><span>◆ 0</span></div>
+</div>
+<div class="home-title"><div class="eyebrow">FIGHTER SELECT</div><h1>CHOOSE YOUR FIGHTER</h1></div>
+<div class="feature">
+ <div class="hero-stage"><div class="fighter-glow"></div><svg id="heroArt" class="hero-art" viewBox="0 0 360 390" role="img" aria-label="Selected fighter illustration"></svg></div>
+ <div class="hero-copy">
+  <div class="hero-info"><div class="role" id="heroRole">ALL-ROUND FIGHTER</div><h2 id="heroName">NOVA</h2><p id="heroDesc">A disciplined arena guardian with a powerful pulse burst.</p></div>
+  <div class="hero-stats">
+   <div class="stat"><span>HEALTH</span><div class="meter"><i id="healthMeter" style="width:70%"></i></div><b id="healthNum">100</b></div>
+   <div class="stat"><span>SPEED</span><div class="meter"><i id="speedMeter" style="width:65%"></i></div><b id="speedNum">3</b></div>
+   <div class="stat"><span>POWER</span><div class="meter"><i id="powerMeter" style="width:60%"></i></div><b id="powerNum">17</b></div>
+  </div>
+ </div>
+</div>
+<div class="fighter-dock">
+ <div class="dock-label">YOUR FIGHTERS</div>
+ <div class="hero-switch">
+  <button class="hero-pick selected" data-hero="nova"><span class="pick-icon nova-icon">N</span><span>NOVA</span></button>
+  <button class="hero-pick" data-hero="bramble"><span class="pick-icon bramble-icon">B</span><span>BRAMBLE</span></button>
+  <button class="hero-pick" data-hero="zip"><span class="pick-icon zip-icon">Z</span><span>ZIP</span></button>
+ </div>
+</div>
+<div class="battle-dock">
+ <div class="mode-card active"><div class="mode-icon">◆</div><div><strong>SHARD SCRAMBLE</strong><small>Collect shards · 2 minutes</small></div></div>
+ <div class="playrow"><button class="play" id="playBtn">BATTLE!</button><span class="tip">WASD / ARROWS TO MOVE · MOUSE TO AIM · E FOR SPECIAL</span></div>
+</div>
+</section>
 <section id="game" class="screen game"><div class="gamehead"><strong>ARENA <span>RIVALS</span></strong><div class="actions"><button class="small" id="pauseBtn">Ⅱ Pause</button><button class="small" id="homeBtn">Menu</button></div></div>
 <div class="stage"><canvas id="world" width="960" height="540"></canvas><div class="hud"><div class="score blue">BLUE TEAM &nbsp;<b id="blueScore">0</b></div><div class="timer" id="clock">2:00</div><div class="score red">ORANGE TEAM &nbsp;<b id="orangeScore">0</b></div></div><div class="overlay" id="overlay"><div class="dialog"><div class="eyebrow">MATCH COMPLETE</div><h2 id="result">Victory!</h2><p id="report"></p><button class="play" id="again">REMATCH</button><button class="small" id="backMenu">MAIN MENU</button></div></div></div>
 <div class="under"><div>HEALTH<div class="health"><i id="hpbar"></i></div></div><span>Move: WASD / arrows · Aim: mouse · Attack: click / space</span><button class="skill" id="skill">⚡ SPECIAL <b id="skillLabel">READY</b></button></div>
