@@ -414,12 +414,67 @@ html,body{overscroll-behavior:none;overflow-x:hidden}
  #home .crate-bar{margin-top:7px}
 }
 
+
+/* Clash Royale-inspired lobby navigation placement */
+#home .home-inner{position:relative;min-height:calc(100vh - 62px);padding-bottom:94px}
+#home .home-title{margin-top:7px}
+#home .feature{width:min(100%,780px);margin:0 auto;position:relative;z-index:1}
+#home .hero-stage{height:clamp(300px,42vh,430px)}
+#home .lobby-side{position:absolute;z-index:3;top:43%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;width:154px}
+#home .lobby-side-left{left:0}
+#home .lobby-side-right{right:0}
+#home .lobby-nav{width:100%;min-height:82px;padding:9px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:3px solid #8ce7ff;border-radius:14px;background:linear-gradient(180deg,#147bb8,#07518c);color:#fff8dc;box-shadow:0 5px 0 #063d6c,0 8px 16px #073c6266;text-shadow:0 1px 2px #06395b}
+#home .lobby-nav .nav-icon{font-size:25px;line-height:1.15}
+#home .lobby-nav b{font-size:12px;letter-spacing:.7px}
+#home .lobby-nav small{font-size:8px;color:#d4f2ff}
+#home .lobby-nav.shop-nav{background:linear-gradient(#ffe779,#ffb52f);border-color:#fff2a6;color:#704019;text-shadow:none;box-shadow:0 5px 0 #a75f25,0 8px 16px #073c6266}
+#home .lobby-nav.shop-nav small{color:#825326}
+#home .fighter-dock{width:min(100%,760px);margin:8px auto 0}
+#home .battle-dock{width:min(100%,760px);margin:8px auto 0}
+#home .mode-card{max-width:520px;margin:auto}
+#home .playrow{margin-top:9px}
+#home .lobby-bottom-nav{position:absolute;z-index:4;left:50%;bottom:12px;transform:translateX(-50%);width:min(760px,calc(100% - 330px));min-height:70px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px;padding:7px;background:linear-gradient(180deg,#075b99,#064477);border:3px solid #7edfff;border-radius:16px;box-shadow:0 5px 0 #04335c,0 10px 20px #063b6277}
+#home .lobby-bottom-nav button{border:2px solid #5bbbe2;border-radius:10px;background:linear-gradient(#1687bd,#0c6098);color:#eafaff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:0;padding:4px}
+#home .lobby-bottom-nav button span{font-size:19px;line-height:1.1}
+#home .lobby-bottom-nav button b{font-size:9px;letter-spacing:.5px}
+#home .lobby-bottom-nav button.bottom-active{background:linear-gradient(#ffe978,#ffb52f);border-color:#fff3ad;color:#71421d;box-shadow:0 2px 0 #a75e25}
+@media(max-width:760px){
+ #home .home-inner{min-height:calc(100svh - 50px);padding-bottom:12px}
+ #home .home-title{margin-top:8px}
+ #home .lobby-side{position:static;transform:none;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0}
+ #home .lobby-side-left{order:2}
+ #home .home-title{order:1}
+ #home .lobby-side-right{order:3}
+ #home .feature{order:4}
+ #home .fighter-dock{order:5}
+ #home .battle-dock{order:6}
+ #home .lobby-nav{min-height:54px;padding:5px 3px;border-width:2px;border-radius:9px}
+ #home .lobby-nav .nav-icon{font-size:17px}
+ #home .lobby-nav b{font-size:9px}
+ #home .lobby-nav small{display:none}
+ #home .hero-stage{height:clamp(190px,27vh,245px)}
+ #home .lobby-bottom-nav{position:static;transform:none;left:auto;bottom:auto;width:100%;min-height:58px;margin:10px auto 0;padding:5px;gap:4px;border-width:2px;border-radius:11px}
+ #home .lobby-bottom-nav button{border-width:1px;border-radius:7px}
+ #home .lobby-bottom-nav button span{font-size:16px}
+ #home .lobby-bottom-nav button b{font-size:8px}
+}
+
 </style></head><body>
 <header class="top"><div class="brand">RESPAWN <b>ARENA RIVALS</b></div><a class="back" href="/">← All games</a></header>
 <section id="home" class="screen active home"><div class="home-inner">
 <div class="homebar">
  <div class="profile"><div class="avatar">R</div><div><strong id="profileName">Rookie</strong><small>ARENA RANK 1</small></div></div>
  <div class="wallet"><span id="coinCount">✦ 250</span><span id="unlockCount">3 / 9 FIGHTERS</span></div>
+</div>
+<div class="lobby-side lobby-side-left" aria-label="Main navigation">
+ <button class="lobby-nav shop-nav" id="cratesBtn"><span class="nav-icon">🛒</span><b>SHOP</b><small>Crates & rewards</small></button>
+ <button class="lobby-nav"><span class="nav-icon">🃏</span><b>CARDS</b><small>Fighter collection</small></button>
+ <button class="lobby-nav"><span class="nav-icon">🛡️</span><b>CLAN</b><small>Team up</small></button>
+</div>
+<div class="lobby-side lobby-side-right" aria-label="More navigation">
+ <button class="lobby-nav"><span class="nav-icon">🎯</span><b>QUESTS</b><small>Daily challenges</small></button>
+ <button class="lobby-nav"><span class="nav-icon">🏆</span><b>TROPHIES</b><small>Your progress</small></button>
+ <button class="lobby-nav"><span class="nav-icon">⚡</span><b>EVENTS</b><small>Special modes</small></button>
 </div>
 <div class="home-title"><div class="eyebrow">FIGHTER SELECT</div><h1>CHOOSE YOUR FIGHTER</h1></div>
 <div class="feature">
@@ -436,12 +491,18 @@ html,body{overscroll-behavior:none;overflow-x:hidden}
 <div class="fighter-dock">
  <div class="dock-label">YOUR FIGHTERS</div>
  <div class="hero-switch" id="brawlerGrid"></div>
- <div class="crate-bar"><button class="crate-open" id="cratesBtn">🛒 SHOP</button></div>
 </div>
 <div class="battle-dock">
  <div class="mode-card active"><div class="mode-icon">⚔</div><div><strong>FREE-FOR-ALL</strong><small>10 fighters · everyone is an opponent · most eliminations wins</small></div></div>
  <div class="playrow"><button class="play" id="playBtn">BATTLE!</button><span class="tip">MOVE · AIM + ATTACK · ULTIMATE</span></div>
 <div class="queue-status" id="queueStatus">Searching for players… bots join after 12 seconds.</div>
+</div>
+<div class="lobby-bottom-nav" aria-label="Game navigation">
+ <button><span>🛒</span><b>SHOP</b></button>
+ <button><span>🃏</span><b>FIGHTERS</b></button>
+ <button class="bottom-active"><span>⚔️</span><b>BATTLE</b></button>
+ <button><span>🛡️</span><b>CLAN</b></button>
+ <button><span>🎯</span><b>EVENTS</b></button>
 </div>
 </div>
 </section>
