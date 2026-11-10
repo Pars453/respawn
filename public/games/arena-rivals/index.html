@@ -666,7 +666,7 @@ function mapSegmentBlocked(ax,ay,bx,by,r=0){if(rocks.some(box=>segmentRectHit(ax
 function move(e,dx,dy,dt){let l=Math.hypot(dx,dy)||1;const analog=stick&&e===player?clamp(l,0,1):1;dx/=l;dy/=l;const distance=e.speed*(e.slow>0?.62:1)*analog*dt/16,steps=Math.max(1,Math.ceil(distance/4)),sx=dx*distance/steps,sy=dy*distance/steps,oldX=e.x,oldY=e.y;for(let i=0;i<steps;i++){const nx=clamp(e.x+sx,e.r,WW-e.r);if(!mapCircleBlocked(nx,e.y,e.r))e.x=nx;const ny=clamp(e.y+sy,e.r,WH-e.r);if(!mapCircleBlocked(e.x,ny,e.r))e.y=ny}e.vx=(e.x-oldX)/(dt/16||1);e.vy=(e.y-oldY)/(dt/16||1)}
 function blocked(a,b){return mapSegmentBlocked(a.x,a.y,b.x,b.y,10)}
 function fire(e,x,y){const k=KITS[e.type]||KITS.nova,now=performance.now();if(e.hp<=0||e.ammo<=0||e.reload>0||now-e.lastShot<e.rate)return;e.lastShot=now;e.ammo--;if(!e.ammo)e.reload=k.reload;const a=Math.atan2(y-e.y,x-e.x),add=(ang,spd,dmg,kind,extra={})=>{const q={x:e.x+Math.cos(ang)*27,y:e.y+Math.sin(ang)*27,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,team:e.side,damage:dmg*(1+(e.power||0)*.12),life:Math.ceil(k.range/spd),shotType:kind,...extra};shots.push(q);if(e===player&&arenaOnline)sendArena({t:'arena_shot',x:q.x,y:q.y,vx:q.vx,vy:q.vy,damage:q.damage,shotType:kind})};switch(k.pattern){case'thorn':add(a,k.speed,e.damage*1.35,'heavy',{pierce:1});break;case'twin':add(a-.075,k.speed,e.damage*.62,'spread');add(a+.075,k.speed,e.damage*.62,'spread');break;case'sniper':add(a,k.speed,e.damage*1.9,'heavy',{pierce:2});break;case'ice':add(a,k.speed,e.damage*.9,'bolt',{slow:650});break;case'shell':add(a,k.speed,e.damage*1.65,'heavy',{splash:58});break;case'burst':for(let i=-1;i<=1;i++)add(a+i*.09,k.speed,e.damage*.62,'spread');break;case'wave':for(let i=-2;i<=2;i++)add(a+i*.19,k.speed,e.damage*.42,'spread');break;case'orb':add(a,k.speed,e.damage,'bolt',{homing:true});break;default:add(a,k.speed,e.damage,'bolt')}}
-function autoShoot(){if(!player||player.hp<=0||!active)return false;const k=KITS[player.type]||KITS.nova,targets=[...remotePlayers,...bots].filter(e=>e&&e.hp>0&&e.side!==player.side&&dist(player,e)<=k.range&&!mapSegmentBlocked(player.x,player.y,e.x,e.y,5)).sort((a,b)=>dist(player,a)-dist(player,b));if(!targets.length)return false;const target=targets[0];player.face=Math.atan2(target.y-player.y,target.x-player.x);fire(player,target.x,target.y);return true}
+function autoShoot(){if(!player||player.hp<=0||!active)return false;const k=KITS[player.type]||KITS.nova;const enemies=[...remotePlayers,...bots].filter(e=>e&&e.hp>0&&e.side!==player.side&&dist(player,e)<=k.range&&!mapSegmentBlocked(player.x,player.y,e.x,e.y,5)).map(e=>({target:e,kind:'enemy',d:dist(player,e)}));const boxes=powerBoxes.filter(b=>b&&b.hp>0&&dist(player,b)<=k.range&&!mapSegmentBlocked(player.x,player.y,b.x,b.y,5)).map(b=>({target:b,kind:'box',d:dist(player,b)}));const choices=[...enemies,...boxes].sort((a,b)=>a.d-b.d||(a.kind==='enemy'?-1:1));if(!choices.length)return false;const target=choices[0].target;player.face=Math.atan2(target.y-player.y,target.x-player.x);fire(player,target.x,target.y);return true}
 function special(){if(!player||player.hp<=0||(player.charge||0)<100)return;const p=player,a=p.face,foes=[player,...remotePlayers,...bots].filter(e=>e&&e!==p&&e.hp>0&&e.side!==p.side),send=(ang,spd,dmg,kind='heavy',life=70,extra={})=>{const q={x:p.x+Math.cos(ang)*28,y:p.y+Math.sin(ang)*28,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,team:p.side,damage:dmg*(1+(p.power||0)*.12),life,shotType:kind,...extra};shots.push(q);if(arenaOnline)sendArena({t:'arena_shot',x:q.x,y:q.y,vx:q.vx,vy:q.vy,damage:q.damage,shotType:kind})},hurt=(e,n)=>{if(!e||e.hp<=0)return;e.hp-=n;e.flash=220;if(e.hp<=0){scores[p.side]=(scores[p.side]||0)+1;eliminate(e)}};p.charge=0;p.flash=450;superFx(p);switch(p.type){case'nova':for(const e of foes)if(dist(p,e)<175){hurt(e,34);const d=dist(p,e)||1;move(e,(e.x-p.x)/d,(e.y-p.y)/d,260)}for(let i=0;i<10;i++)send(i*Math.PI/5,8,12,'spread',42);break;case'bramble':p.hp=Math.min(p.max,p.hp+55);p.shield=3200;for(let i=0;i<8;i++)send(i*Math.PI/4,5,10,'heavy',38,{splash:35});break;case'zip':move(p,Math.cos(a),Math.sin(a),1050);for(let i=-1;i<=1;i++)send(a+i*.13,13,18,'spread',36);break;case'ember':send(a,19,58,'heavy',105,{pierce:5});break;case'frost':for(const e of foes)if(dist(p,e)<220){hurt(e,22);e.slow=Math.max(e.slow||0,2600)}for(let i=0;i<8;i++)send(i*Math.PI/4,7,9,'bolt',38,{slow:2200});break;case'rook':for(let i=0;i<12;i++)send(i*Math.PI/6,7,17,'heavy',48,{splash:58});p.hp=Math.min(p.max,p.hp+28);break;case'volt':{let list=foes.filter(e=>dist(p,e)<390).sort((x,y)=>dist(p,x)-dist(p,y)).slice(0,4);list.forEach((e,i)=>hurt(e,34-i*5));p.flash=700;break}case'mako':for(const e of foes){const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy)||1,ang=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(ang-a),Math.cos(ang-a));if(d<285&&Math.abs(diff)<.95){hurt(e,38);move(e,dx/d,dy/d,420)}}break;case'wisp':{const target=foes.sort((x,y)=>dist(p,x)-dist(p,y))[0];if(target){const d=dist(p,target)||1;p.x=clamp(target.x+(p.x-target.x)/d*95,p.r,WW-p.r);p.y=clamp(target.y+(p.y-target.y)/d*95,p.r,WH-p.r)}for(let i=-1;i<=1;i++)send(a+i*.1,10,19,'bolt',72,{homing:true});p.flash=900;break}}}function nearestEnemy(e){return [player,...remotePlayers,...bots].filter(o=>o&&o!==e&&o.side!==e.side&&o.hp>0).sort((a,b)=>dist(e,a)-dist(e,b))[0]}
 function ai(e,dt){if(e.hp<=0)return;
 const enemies=[player,...remotePlayers,...bots].filter(o=>o&&o!==e&&o.hp>0&&o.side!==e.side),foe=enemies.sort((a,b)=>dist(e,a)-dist(e,b))[0],low=e.hp/e.max<.38,near=foe&&dist(e,foe)<520;
@@ -732,46 +732,47 @@ function drawAim(){const p=player;if(!p||p.hp<=0||!active)return;const k=KITS[p.
 function drawShots(){for(const s of shots){const c=SC[s.team%10],r=s.shotType==='heavy'?9:s.shotType==='spread'?5:7;ctx.lineCap='round';ctx.strokeStyle=c;ctx.globalAlpha=.4;ctx.lineWidth=r*1.5;ctx.beginPath();ctx.moveTo(s.x-s.vx*3,s.y-s.vy*3);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,r*2.6);g.addColorStop(0,c);g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.globalAlpha=.55;ctx.beginPath();ctx.arc(s.x,s.y,r*2.6,0,TAU);ctx.fill();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.beginPath();ctx.arc(s.x,s.y,r+2.5,0,TAU);ctx.fillStyle='#14212b';ctx.fill();ctx.beginPath();ctx.arc(s.x,s.y,r,0,TAU);ctx.fillStyle=c;ctx.fill();ctx.beginPath();ctx.arc(s.x-r*.25,s.y-r*.25,r*.5,0,TAU);ctx.fillStyle='#fff';ctx.fill()}}
 function drawFx(){for(const f of fx){const q=f.t/f.d;if(f.k==='p'){ctx.globalAlpha=1-q;ctx.fillStyle=f.c;ctx.beginPath();ctx.arc(f.x,f.y,4*(1-q)+1,0,TAU);ctx.fill()}else if(f.k==='ring'){ctx.globalAlpha=1-q;ctx.strokeStyle=f.c;ctx.lineWidth=8*(1-q)+1;ctx.beginPath();ctx.ellipse(f.x,f.y+10,f.r*q,f.r*q*.6,0,0,TAU);ctx.stroke()}else{const z=(q<.15?14+q*60:23-q*6)*(f.big?1.3:1);ctx.globalAlpha=Math.min(1,2-2*q);txt(f.v,f.x,f.y-q*34,z,f.c,'#201030')}ctx.globalAlpha=1}}
 function drawHero(e){
- const h=H[e.type],me=e===player,t=performance.now()/1000,mv=Math.hypot(e.vx||0,e.vy||0)>.25,ph=t*11+e.side,x=e.x,y=e.y,OL='#17212a',c1=C(h.color),c2=C(h.dark),c3=C(h.accent),skin=C('#f2c99b');
+ const h=H[e.type],me=e===player,t=performance.now()/1000,mv=Math.hypot(e.vx||0,e.vy||0)>.25,ph=t*10+e.side,x=e.x,y=e.y,OL='#17212a',c1=C(h.color),c2=C(h.dark),c3=C(h.accent);
  FT=Math.min(.7,(e.flash||0)/170);
- ctx.fillStyle='#0008';ell(x+2,y+13,23,10);ctx.fill();
- ctx.fillStyle=me?'#44b8ff55':'#ff514533';ell(x,y+8,29,19);ctx.fill();ctx.strokeStyle=me?'#53c7ff':'#ff6557';ctx.lineWidth=3;ctx.stroke();
- if(e.shield>0){ctx.strokeStyle='#8fe9ffcc';ctx.lineWidth=3.5;ctx.beginPath();ctx.arc(x,y,34,0,TAU);ctx.stroke();ctx.fillStyle='#8fe9ff20';ctx.fill()}
- if(e.slow>0){ctx.strokeStyle='#bff2ff';ctx.lineWidth=2.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(x,y,34,24,0,0,TAU);ctx.stroke();ctx.setLineDash([])}
- ctx.save();ctx.translate(x,y+(mv?Math.sin(ph)*.8:0));ctx.rotate(e.face);
- // Feet and leg armour, viewed directly from above
- for(const side of[-1,1]){rr(-20,-side*10-4,13,9,3);fs(C(h.dark,-.18),OL);ctx.fillStyle='#c3b59a';rr(-23,-side*10-2,4,4,1);ctx.fill()}
- // Torso and shoulder pads
- ctx.beginPath();ctx.ellipse(-4,0,15,13,0,0,TAU);fs(c2,OL);
- ctx.beginPath();ctx.ellipse(-3,-1,12,10,0,0,TAU);fs(c1,OL);
- ctx.fillStyle=c3;rr(-12,-3,15,5,2);ctx.fill();
- ctx.fillStyle='#d7c39a';rr(-9,7,9,3,1);ctx.fill();
- for(const side of[-1,1]){ctx.beginPath();ctx.ellipse(-1,side*12,8,6,side*.2,0,TAU);fs(C(h.dark,.1),OL);ctx.beginPath();ctx.arc(-1,side*12,3,0,TAU);ctx.fillStyle=c3;ctx.fill()}
- // Character-specific top-down headgear silhouette
- ctx.beginPath();ctx.arc(10,0,12,0,TAU);fs(skin,OL);
- ctx.beginPath();ctx.arc(11,-1,13,Math.PI*1.05,Math.PI*1.95);ctx.lineTo(23,2);ctx.closePath();fs(c2,OL);
- ctx.beginPath();ctx.ellipse(12,-2,10,9,0,Math.PI,TAU);fs(c1,OL);
- ctx.fillStyle=c3;
+ // Ground shadow and team marker: the whole model is drawn as a miniature viewed straight down.
+ ctx.fillStyle='#0009';ell(x+2,y+12,23,11);ctx.fill();
+ ctx.fillStyle=me?'#44b8ff45':'#ff51452e';ell(x,y+5,29,25);ctx.fill();
+ ctx.strokeStyle=me?'#53c7ff':'#ff6557';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y+2,28,0,TAU);ctx.stroke();
+ if(e.shield>0){ctx.strokeStyle='#8fe9ffdd';ctx.lineWidth=3.5;ctx.beginPath();ctx.arc(x,y,35,0,TAU);ctx.stroke();ctx.fillStyle='#8fe9ff18';ctx.fill()}
+ if(e.slow>0){ctx.strokeStyle='#bff2ff';ctx.lineWidth=2.5;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(x,y,38,0,TAU);ctx.stroke();ctx.setLineDash([])}
+ ctx.save();ctx.translate(x,y+(mv?Math.sin(ph)*.7:0));ctx.rotate(e.face);
+ // Four short boots sit around the circular body, not behind a side-facing torso.
+ for(const q of[[-10,-17],[10,-17],[-10,17],[10,17]]){rr(q[0]-5,q[1]-4,10,9,3);fs(C(h.dark,-.2),OL);ctx.fillStyle='#b9c3c2';rr(q[0]-2,q[1]-2,4,3,1);ctx.fill()}
+ // Arms and shoulder guards are visible on both sides from the overhead camera.
+ for(const side of[-1,1]){ctx.beginPath();ctx.ellipse(side*17,1,8,6,side*.18,0,TAU);fs(c2,OL);ctx.beginPath();ctx.arc(side*18,1,3.5,0,TAU);ctx.fillStyle=c3;ctx.fill()}
+ // Round armour silhouette with concentric plates and a central crest.
+ ctx.beginPath();ctx.arc(0,0,17,0,TAU);fs(c2,OL);
+ ctx.beginPath();ctx.arc(0,0,13.5,0,TAU);fs(c1,OL);
+ ctx.beginPath();ctx.arc(-1,1,8,0,TAU);fs(C(h.color,.18),OL);
+ ctx.strokeStyle='#ffffff66';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(-1,1,10,Math.PI*.15,Math.PI*.85);ctx.stroke();
+ ctx.fillStyle=c3;poly([[-5,-5],[0,-11],[5,-5],[0,1]],c3,OL,1.3);
+ // Helmet is a circular top-down cap; no front-facing face or profile is drawn.
+ ctx.beginPath();ctx.arc(0,-1,10.5,0,TAU);fs(c2,OL);
+ ctx.beginPath();ctx.arc(0,-2,8.2,0,TAU);fs(c1,OL);
+ // Distinctive silhouettes remain readable when viewed from directly above.
  switch(e.type){
- case'nova':poly([[3,-9],[10,-18],[17,-9]],c3,OL,1.5);rr(3,-13,17,4,2);fs(c2,OL);break;
- case'bramble':poly([[3,-8],[0,-17],[8,-12],[12,-21],[16,-12],[24,-17],[20,-7]],c3,OL,1.5);break;
- case'zip':poly([[3,-8],[2,-19],[9,-13],[13,-22],[17,-12],[23,-18],[22,-7]],c3,OL,1.5);ctx.fillStyle='#d9f7ff';ell(10,-4,2,2);ctx.fill();ell(17,-4,2,2);ctx.fill();break;
- case'ember':rr(4,-16,17,6,3);fs(c2,OL);poly([[15,-15],[22,-24],[20,-13]],c3,OL,1);break;
- case'frost':poly([[3,-8],[5,-19],[10,-13],[13,-23],[17,-13],[22,-19],[21,-8]],'#eaf6f4',OL,1.5);ctx.strokeStyle=c3;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(13,-18);ctx.lineTo(13,-7);ctx.stroke();break;
- case'rook':rr(2,-16,20,14,4);fs(c1,OL);ctx.fillStyle=c3;rr(6,-14,12,4,2);ctx.fill();break;
- case'volt':poly([[2,-8],[0,-18],[8,-12],[10,-23],[15,-13],[22,-20],[21,-7]],c3,OL,1.5);break;
- case'mako':poly([[2,-9],[5,-17],[10,-11],[15,-23],[19,-10],[24,-16],[21,-5]],c2,OL,1.5);ctx.fillStyle='#fff';for(let q=5;q<21;q+=5){poly([[q,-8],[q+2,-3],[q+4,-8]],'#fff',OL,1)}break;
- case'wisp':poly([[3,-8],[-1,-20],[9,-13],[13,-24],[17,-13],[26,-20],[21,-7]],c1,OL,1.5);ctx.fillStyle=c3;ell(6,-11,3,2);ctx.fill();ell(20,-11,3,2);ctx.fill();break;
+ case'nova':poly([[-7,-5],[0,-16],[7,-5],[0,-1]],c3,OL,1.5);break;
+ case'bramble':poly([[-8,-4],[-11,-14],[-3,-9],[0,-17],[4,-9],[11,-14],[8,-3]],c3,OL,1.5);break;
+ case'zip':poly([[-8,-5],[-7,-15],[-1,-9],[2,-17],[6,-9],[11,-14],[9,-3]],c3,OL,1.5);ctx.fillStyle='#e9fbff';ell(-3,-1,1.8,1.8);ctx.fill();ell(4,-1,1.8,1.8);ctx.fill();break;
+ case'ember':rr(-8,-13,16,6,3);fs(c3,OL);poly([[3,-12],[10,-20],[8,-10]],'#ffd58a',OL,1);break;
+ case'frost':poly([[-9,-5],[-6,-14],[0,-9],[5,-17],[9,-5],[0,-1]],'#eaf6f4',OL,1.5);ctx.strokeStyle=c3;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(0,-3);ctx.stroke();break;
+ case'rook':rr(-10,-12,20,17,5);fs(c1,OL);ctx.fillStyle=c3;rr(-6,-9,12,4,2);ctx.fill();break;
+ case'volt':poly([[-9,-4],[-8,-15],[-2,-9],[1,-18],[5,-9],[11,-15],[9,-2]],c3,OL,1.5);break;
+ case'mako':poly([[-9,-5],[-6,-13],[0,-8],[5,-17],[9,-5],[0,0]],c2,OL,1.5);ctx.fillStyle='#fff';for(let q=-6;q<=6;q+=6)poly([[q,-5],[q+2,-1],[q+4,-5]],'#fff',OL,.8);break;
+ case'wisp':poly([[-9,-4],[-12,-15],[-3,-9],[1,-18],[5,-9],[12,-15],[9,-2]],c1,OL,1.5);ctx.fillStyle=c3;ell(-6,-8,2.5,2);ctx.fill();ell(6,-8,2.5,2);ctx.fill();break;
  }
- // Visor facing the direction of travel
- ctx.fillStyle='#15212b';rr(18,-5,5,10,2);ctx.fill();ctx.fillStyle=me?'#9be7ff':'#ffe0a6';rr(20,-4,2,8,1);ctx.fill();
- // Weapon held out in front, always aligned with aim
- ctx.strokeStyle=OL;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(1,8);ctx.lineTo(13,11);ctx.stroke();
- ctx.strokeStyle=skin;ctx.lineWidth=5;ctx.stroke();
- rr(13,7,24,9,3);fs('#344354',OL);ctx.fillStyle=c1;rr(27,8,10,7,2);ctx.fill();ctx.fillStyle=c3;rr(17,8,5,7,1);ctx.fill();
- ctx.fillStyle='#b9c5c7';rr(34,9,5,5,1);ctx.fill();
- // Armour seams and highlight
- ctx.strokeStyle='#ffffff55';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(-4,-1,9,Math.PI*.15,Math.PI*.85);ctx.stroke();
+ // Weapon points out from the centre and rotates with aim; it is clearly seen from above.
+ ctx.strokeStyle=OL;ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(8,1);ctx.lineTo(21,1);ctx.stroke();
+ ctx.strokeStyle='#d6c5a5';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(9,1);ctx.lineTo(21,1);ctx.stroke();
+ rr(17,-5,16,10,3);fs('#344354',OL);ctx.fillStyle=c1;rr(23,-4,10,8,2);ctx.fill();ctx.fillStyle=c3;rr(19,-3,4,6,1);ctx.fill();
+ ctx.fillStyle='#c7d0ca';rr(30,-3,5,6,1);ctx.fill();
+ // Small directional arrow makes the facing direction clear without turning the model sideways.
+ poly([[12,-4],[19,0],[12,4]],'#fff0b0',OL,1);
  ctx.restore();FT=0
 }
 function overhead(e,me){const x=e.x,yb=e.y-78,w=66,hp=Math.max(0,e.hp/e.max),bx=x-w/2;
