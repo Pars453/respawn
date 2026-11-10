@@ -384,6 +384,36 @@ html,body{overscroll-behavior:none;overflow-x:hidden}
  #home .tip{font-size:8px}
 }
 
+
+/* Lobby composition: central fighter, side shop action, bottom roster and battle controls */
+@media(min-width:761px){
+ #home .home-inner{max-width:1450px;min-height:calc(100vh - 62px);padding:10px 24px 20px;display:flex;flex-direction:column}
+ #home .homebar{order:0;width:100%;flex-shrink:0}
+ #home .home-title{order:1;margin:10px 0 0;text-align:center}
+ #home .feature{order:2;flex:1;min-height:350px;justify-content:center;position:relative;width:100%;max-width:none}
+ #home .hero-stage{height:clamp(330px,43vh,470px);width:100%;max-width:800px;margin:0 auto}
+ #home .hero-stage:after{width:clamp(300px,29vw,390px);height:clamp(300px,29vw,390px)}
+ #home .hero-art{width:min(100%,470px)}
+ #home .hero-copy{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:min(650px,70%);padding:10px 16px}
+ #home .fighter-dock{order:3;width:min(100%,1000px);margin:12px auto 0;padding:8px 12px}
+ #home .fighter-dock .dock-label{margin-bottom:5px}
+ #home .fighter-dock .crate-bar{position:absolute;right:25px;top:50%;transform:translateY(-50%);margin:0}
+ #home .fighter-dock{position:relative}
+ #home .crate-open{min-width:118px;min-height:76px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+ #home .battle-dock{order:4;width:min(100%,1000px);margin:12px auto 0}
+ #home .playrow{justify-content:center}
+ #home .play{min-width:320px}
+}
+@media(max-width:760px){
+ #home .home-inner{display:flex;flex-direction:column}
+ #home .homebar{order:0}
+ #home .home-title{order:1}
+ #home .feature{order:2}
+ #home .fighter-dock{order:3}
+ #home .battle-dock{order:4}
+ #home .crate-bar{margin-top:7px}
+}
+
 </style></head><body>
 <header class="top"><div class="brand">RESPAWN <b>ARENA RIVALS</b></div><a class="back" href="/">← All games</a></header>
 <section id="home" class="screen active home"><div class="home-inner">
@@ -406,7 +436,7 @@ html,body{overscroll-behavior:none;overflow-x:hidden}
 <div class="fighter-dock">
  <div class="dock-label">YOUR FIGHTERS</div>
  <div class="hero-switch" id="brawlerGrid"></div>
- <div class="crate-bar"><button class="crate-open" id="cratesBtn">📦 OPEN SUPPLY CRATES</button></div>
+ <div class="crate-bar"><button class="crate-open" id="cratesBtn">🛒 SHOP</button></div>
 </div>
 <div class="battle-dock">
  <div class="mode-card active"><div class="mode-icon">⚔</div><div><strong>FREE-FOR-ALL</strong><small>10 fighters · everyone is an opponent · most eliminations wins</small></div></div>
@@ -420,7 +450,7 @@ html,body{overscroll-behavior:none;overflow-x:hidden}
 <div class="under"><div class="health-stack"><div>HEALTH<div class="health"><i id="hpbar"></i></div></div><div class="ammo-readout">AMMO <b id="ammoCount">4 / 4</b> <span class="cube-readout">CUBES <b id="cubeCount">0</b></span></div></div><span class="desktop-hint">WASD move · Mouse aim · Click to attack · E ultimate</span><button class="skill" id="skill">⚡ SPECIAL <b id="skillLabel">READY</b></button></div>
 <div class="mobile" id="mobileControls"><div class="floating-stick" id="floatingMove"><i></i><b>MOVE</b></div><div class="floating-stick" id="floatingAim"><i></i><b>AIM</b></div><div class="mobile-actions"><button class="mobile-skill" id="mobileSkill" aria-label="Use super"><span class="sp-bolt">⚡</span><b id="superPct">0%</b></button><button class="mobile-attack" id="mobileAttack" aria-label="Attack">ATTACK</button></div></div></section>
 <div class="waiting-screen" id="waitingScreen" role="dialog" aria-modal="true" aria-labelledby="waitingTitle"><div class="waiting-card"><div class="waiting-kicker">ARENA RIVALS MATCHMAKING</div><h2 id="waitingTitle">WAITING FOR MATCH</h2><p class="waiting-sub" id="waitingSub">Looking for another player to join your arena.</p><div class="queue-count"><strong id="queueCount">1 / 10</strong><span>REAL PLAYERS FOUND</span></div><div class="queue-slots" id="queueSlots"></div><div class="waiting-timer" id="waitingTimer">Bots join in 12 seconds</div><div class="waiting-progress"><i id="waitingProgress"></i></div><button class="waiting-cancel" id="cancelQueue">CANCEL SEARCH</button></div></div>
-<div class="crate-screen" id="crateScreen"><div class="crate-card"><div class="eyebrow">FIGHTER UNLOCKS</div><h2>SUPPLY CRATES</h2><p>Earn coins from matches. Scout: 75% Rare / 22% Epic / 3% Mythic. Elite: 45% / 45% / 10%. Mythic: 15% / 55% / 30%. No real-money purchases.</p><div class="crate-options"><button class="crate-option" data-crate="scout">SCOUT<strong>✦ 100</strong></button><button class="crate-option" data-crate="elite">ELITE<strong>✦ 250</strong></button><button class="crate-option" data-crate="mythic">MYTHIC<strong>✦ 500</strong></button></div><div class="crate-result" id="crateResult">Choose a crate to reveal a fighter.</div><button class="crate-close" id="crateClose">BACK TO FIGHTERS</button></div></div><div class="name-screen" id="nameScreen"><div class="name-card"><div class="eyebrow">PLAYER PROFILE</div><h2>CHOOSE YOUR NAME</h2><p>This name will be shown to other players in Arena Rivals.</p><input id="playerNameInput" maxlength="16" autocomplete="nickname" placeholder="Enter a name"><div class="name-actions"><button class="small" id="nameCancel">CANCEL</button><button class="play" id="nameConfirm">CONTINUE</button></div></div></div>
+<div class="crate-screen" id="crateScreen"><div class="crate-card"><div class="eyebrow">FIGHTER UNLOCKS</div><h2>SHOP</h2><p>Earn coins from matches. Scout: 75% Rare / 22% Epic / 3% Mythic. Elite: 45% / 45% / 10%. Mythic: 15% / 55% / 30%. No real-money purchases.</p><div class="crate-options"><button class="crate-option" data-crate="scout">SCOUT<strong>✦ 100</strong></button><button class="crate-option" data-crate="elite">ELITE<strong>✦ 250</strong></button><button class="crate-option" data-crate="mythic">MYTHIC<strong>✦ 500</strong></button></div><div class="crate-result" id="crateResult">Choose a crate to reveal a fighter.</div><button class="crate-close" id="crateClose">BACK TO FIGHTERS</button></div></div><div class="name-screen" id="nameScreen"><div class="name-card"><div class="eyebrow">PLAYER PROFILE</div><h2>CHOOSE YOUR NAME</h2><p>This name will be shown to other players in Arena Rivals.</p><input id="playerNameInput" maxlength="16" autocomplete="nickname" placeholder="Enter a name"><div class="name-actions"><button class="small" id="nameCancel">CANCEL</button><button class="play" id="nameConfirm">CONTINUE</button></div></div></div>
 <script>
 (()=>{
 const $=id=>document.getElementById(id),svg=$('heroArt');
