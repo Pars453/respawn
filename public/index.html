@@ -96,6 +96,49 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 .player-frame-wrap.show-note .player-note{opacity:1}
 @media(max-width:700px){.player-modal{padding:0}.player-shell{height:100%;border-radius:0;border:0}.player-top{min-height:52px;padding:7px 9px}.player-action{padding:8px}.player-frame-wrap{padding-bottom:env(safe-area-inset-bottom)}}
 
+
+/* Respawn refresh: brighter, compact game-library presentation */
+:root{--bg:#101a2b;--panel:#1a2940;--panel2:#223650;--line:#304765;--text:#f4f7ff;--muted:#a8b7cd;--accent:#ffb84d;--accent2:#ed8e37}
+body{background:radial-gradient(ellipse at 80% -10%,#29466d 0,transparent 40%),var(--bg)}
+.sidebar{background:#101c30;border-right-color:#2a4263}
+.brand-mark{background:linear-gradient(145deg,#ffcb65,#f07842);color:#17243a;box-shadow:0 5px 18px #f0784238}
+.nav-link{border-radius:11px;color:#b7c5d9}
+.nav-link:hover{background:#203653;color:#fff}
+.nav-link.active{background:linear-gradient(100deg,#3b5476,#2b405f);color:#fff;box-shadow:inset 3px 0 #ffc15e}
+.nav-link.active .nav-icon{color:#ffc15e}
+.topbar{background:#122139eF;border-bottom-color:#2a4263;backdrop-filter:blur(14px)}
+.search{border:1px solid #405a7c;border-radius:12px;background:#f5f8ff;box-shadow:0 5px 18px #07101e35}
+.search:focus{border-color:#ffbd59;box-shadow:0 0 0 3px #ffbd5930}
+.eyebrow{color:#ffc15e}
+h1{letter-spacing:-1.4px}
+.intro,.count,.section-head span{color:#a9bad2}
+.section-head h2{font-size:19px}
+.games{grid-template-columns:repeat(4,minmax(0,1fr));gap:17px}
+.game-card{background:#1b2b43;border:1px solid #344d6e;border-radius:15px;box-shadow:0 7px 20px #07101e35;transition:transform .2s,border-color .2s,box-shadow .2s}
+.game-card:hover{background:#213650;border-color:#f5b95c;transform:translateY(-5px);box-shadow:0 14px 28px #07101e75}
+.cover{height:155px;background:linear-gradient(135deg,#356c87,#202b55 70%);isolation:isolate}
+.cover:before{width:170px;height:170px;border:1px solid #ffffff35;border-radius:34% 66% 53% 47%;transform:rotate(24deg);box-shadow:0 0 0 17px #ffffff0a,0 0 0 36px #ffffff08}
+.cover:after{width:90px;height:90px;border:2px solid #ffffff38;border-radius:28px;transform:rotate(45deg)}
+.cover-symbol{font-size:64px;filter:drop-shadow(0 7px 12px #0008);transition:transform .2s}
+.game-card:hover .cover-symbol{transform:scale(1.12) rotate(-5deg)}
+.cover-label{left:13px;bottom:12px;padding:5px 8px;border-radius:6px;background:#071322a8;color:#f4f7ff;font-size:9px;letter-spacing:1.2px}
+.card-body{padding:13px 14px 14px}
+.meta{margin-bottom:8px}
+.tag{border-radius:20px;background:#2c4360;color:#d6e3f4}
+.tag.beta{background:#523d2b;color:#ffd38c}
+h3{font-size:15px}
+.desc{color:#b1bfd2}
+.play{border-radius:9px;background:linear-gradient(135deg,#ffbd59,#f18b45);color:#172238;font-weight:850}
+.play:hover{background:linear-gradient(135deg,#ffd17d,#ffa15e)}
+.status{color:#a2b2c8}
+.empty{border-color:#47617f;color:#b9c8dc}
+.provider-directory{background:#182a42!important;border-color:#344d6e!important;border-radius:14px!important}
+footer{border-color:#304765;color:#91a4bf}
+@media(max-width:1250px){.games{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.games{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cover{height:118px}.cover-symbol{font-size:48px}.card-body{padding:11px}.desc{font-size:11px}.status{display:none}}
+@media(max-width:430px){.games{grid-template-columns:1fr}.cover{height:140px}}
+
 </style>
 </head>
 <body>
@@ -374,8 +417,6 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <div class="cover" style="background:linear-gradient(145deg,#527c91,#202d42 75%)"><span class="cover-symbol">🟪</span><span class="cover-label">Jump · Time · Progress</span></div>
 <div class="card-body"><div class="meta"><span class="tag">Arcade</span><span class="tag">OnlineGames.io</span></div><h3>Geometry Dash FreezeNova</h3><p class="desc">Keep the moving cube clear of obstacles in a rhythm-based platform challenge.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://www.onlinegames.io/games/2023/q2/geometry-dash-freezenova/index.html">Play game <span>▶</span></a><span class="status">Official iframe embed</span></div></div>
 </article>
-</div>
-
 
 <article class="game-card" data-name="basket random ragdoll basketball two player physics" data-category="sports">
 <div class="cover" style="background:linear-gradient(145deg,#a85c2d,#39251d 75%)"><span class="cover-symbol">🏀</span><span class="cover-label">Jump · Bounce · Score</span></div>
@@ -391,6 +432,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <div class="cover" style="background:linear-gradient(145deg,#3e719a,#1b2a42 75%)"><span class="cover-symbol">🏐</span><span class="cover-label">Serve · Bounce · Win</span></div>
 <div class="card-body"><div class="meta"><span class="tag">Sports</span><span class="tag">2 Player</span><span class="tag">RHM Interactive</span></div><h3>Volley Random</h3><p class="desc">A fast, funny volleyball game built around simple controls and unpredictable physics.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://www.twoplayergames.org/gameframe/volley-random">Play game <span>▶</span></a><span class="status">Publisher game frame</span></div></div>
 </article>
+</div>
 
 <div class="provider-directory" style="margin-top:22px;padding:16px;border:1px solid #292929;border-radius:10px;background:#171717">
   <div style="font-weight:750;margin-bottom:6px">More official game catalogs</div>
@@ -426,7 +468,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 </div>
 
 <script>
-(()=>{const input=document.getElementById('gameSearch');const cards=[...document.querySelectorAll('.game-card')];const links=[...document.querySelectorAll('.nav-link[data-filter]')];const count=document.getElementById('resultCount');const empty=document.getElementById('emptyState');const hint=document.getElementById('sectionHint');let filter='all';function update(){const q=input.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const matchName=card.dataset.name.includes(q);const matchFilter=filter==='all'||card.dataset.category===filter;const visible=matchName&&matchFilter;card.hidden=!visible;if(visible)shown++});count.textContent=shown+' game'+(shown===1?'':'s')+' available';empty.style.display=shown?'none':'block';hint.textContent=({all:'Browse the collection',strategy:'Strategy games',puzzle:'Puzzle games',action:'Action games',racing:'Racing games',sports:'Sports games',simulation:'Simulation games',adventure:'Adventure games'})[filter]||'Browse the collection'}input.addEventListener('input',update);links.forEach(link=>link.addEventListener('click',()=>{filter=link.dataset.filter;links.forEach(item=>item.classList.toggle('active',item===link));update()}));update()})();
+(()=>{const grid=document.getElementById('gameGrid');const input=document.getElementById('gameSearch');const cards=[...grid.querySelectorAll('.game-card')];const links=[...document.querySelectorAll('.nav-link[data-filter]')];const count=document.getElementById('resultCount');const empty=document.getElementById('emptyState');const hint=document.getElementById('sectionHint');let filter='all';const quality={ 'clash of vikings':98,'arena rivals':97,'starfall sabotage':96,'water kart royale kart racing':95,'rota bend gravity gravity puzzle platformer':90,'mobius trip rainbow unicorn 3d racing':88,'mots grand prix formula one racing':91,'mots 8 ball pool billiards sports':86,'villager town builder city building':89,'outrunning digital driving collection town':88,'atop 3d platformer tower climbing':85,'astray 3d maze rolling ball':84,'hexgl futuristic 3d racing':89,'basket random ragdoll basketball two player physics':82,'soccer random football ragdoll two player physics':82,'volley random volleyball ragdoll two player physics':81};cards.forEach((card,i)=>{const name=card.dataset.name;const score=quality[name]??(card.dataset.category==='puzzle'?72:card.dataset.category==='sports'?74:card.dataset.category==='racing'?76:card.dataset.category==='simulation'?73:68);card.dataset.quality=String(score);card.style.order=String(100-score);});cards.sort((a,b)=>Number(b.dataset.quality)-Number(a.dataset.quality)).forEach(card=>grid.appendChild(card));function update(){const q=input.value.trim().toLowerCase();let shown=0;[...grid.querySelectorAll('.game-card')].forEach(card=>{const matchName=card.dataset.name.includes(q);const matchFilter=filter==='all'||card.dataset.category===filter;const visible=matchName&&matchFilter;card.hidden=!visible;if(visible)shown++});count.textContent=shown+' game'+(shown===1?'':'s')+' available';empty.style.display=shown?'none':'block';hint.textContent=({all:'Quality-first collection',strategy:'Strategy games',puzzle:'Puzzle games',action:'Action games',racing:'Racing games',sports:'Sports games',simulation:'Simulation games',adventure:'Adventure games'})[filter]||'Browse the collection'}input.addEventListener('input',update);links.forEach(link=>link.addEventListener('click',()=>{filter=link.dataset.filter;links.forEach(item=>item.classList.toggle('active',item===link));update()}));update()})();
 </script>
 
 <script>
