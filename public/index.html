@@ -52,6 +52,9 @@ h1{font-size:clamp(29px,4vw,39px);line-height:1.1;letter-spacing:-1.2px;margin:7
 .cover.vikings{background:linear-gradient(145deg,#49352b,#201a18 72%)}
 .cover.vikings:before{width:180px;height:180px;border:1px solid #b58b6c55;border-radius:50%;box-shadow:0 0 0 18px #b58b6c0d,0 0 0 40px #b58b6c0a}
 .cover.vikings:after{width:95px;height:95px;border:2px solid #d6b08a66;transform:rotate(45deg);border-radius:17px}
+.cover.kart{background:linear-gradient(145deg,#14506b,#10243b 75%)}
+.cover.kart:before{width:220px;height:120px;border:1px solid #74dff055;border-radius:50%;transform:rotate(-20deg)}
+.cover.kart:after{width:110px;height:110px;border:1px solid #74dff033;border-radius:50%}
 .cover.arena{background:linear-gradient(145deg,#293b43,#182126 75%)}
 .cover.arena:before{width:220px;height:120px;border:1px solid #9db7bd44;border-radius:50%;transform:rotate(-20deg)}
 .cover.arena:after{width:110px;height:110px;border:1px solid #9db7bd33;border-radius:50%}
@@ -96,7 +99,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <div class="content">
 <section class="page-head">
 <div><div class="eyebrow">The game room</div><h1>Find your next game.</h1><p class="intro">A growing collection of games. Pick one and jump in.</p></div>
-<div class="count" id="resultCount">2 games available</div>
+<div class="count" id="resultCount">4 games available</div>
 </section>
 <section id="games">
 <div class="section-head"><h2>All games</h2><span id="sectionHint">Browse the collection</span></div>
@@ -110,10 +113,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <div class="card-body"><div class="meta"><span class="tag">Action</span><span class="tag beta">Beta · vs AI</span></div><h3>Arena Rivals</h3><p class="desc">Choose a champion, collect energy shards and compete against rival fighters.</p><div class="card-foot"><a class="play" href="/games/arena-rivals/">Play game <span>→</span></a><span class="status">Available now</span></div></div>
 </article>
 </div>
-<article class="game-card" data-name="starfall sabotage" data-category="action">
-<div class="cover" style="background:radial-gradient(circle at 50% 48%,#315c65,#12232e 70%)"><span class="cover-symbol" style="color:#7de5dc">◉</span><span class="cover-label">Explore · Repair · Sabotage</span></div>
-<div class="card-body"><div class="meta"><span class="tag">Action</span><span class="tag beta">New · First-person</span></div><h3>Starfall: Sabotage</h3><p class="desc">Explore a custom-built space station, complete crew tasks or sabotage its systems as the hidden threat.</p><div class="card-foot"><a class="play" href="/games/starfall-sabotage/">Play game <span>→</span></a><span class="status">Playable prototype</span></div></div>
-</article>
+
 <div class="empty" id="emptyState"><strong>No games found</strong>Try another name or category.</div>
 </section>
 <footer><span>RESPAWN</span><span>Play more. Respawn.</span></footer>

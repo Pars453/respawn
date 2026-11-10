@@ -1,13 +1,24 @@
 {
   "name": "respawn",
-  "version": "1.1.0",
-  "description": "Respawn gaming portal with Clash of Vikings and Arena Rivals.",
+  "version": "1.2.0",
   "private": true,
+  "description": "Respawn gaming portal with browser games",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build:kart": "vite build --config kart-royale.vite.config.mjs",
+    "postinstall": "npm run build:kart"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=20.19.0"
+  },
+  "dependencies": {
+    "@types/three": "^0.185.1",
+    "n8ao": "^2.0.0",
+    "postprocessing": "^6.39.3",
+    "simplex-noise": "^4.0.3",
+    "three": "^0.185.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
   }
 }
