@@ -229,10 +229,10 @@ export const enum ItemKind {
   TripleMushroom = 2,
   GreenShell = 3,
   RedShell = 4,
-  Water Balloon = 5,
+  Banana = 5,
   Star = 6,
   Bolt = 7,
-  Splash Bomb = 8,
+  Bomb = 8,
 }
 
 export interface IItems extends System {
