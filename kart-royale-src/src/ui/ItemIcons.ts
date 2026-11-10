@@ -376,37 +376,22 @@ function drawWaterBlaster(g: G, homing: boolean) {
 function drawGreenFloat(g: G) { drawWaterBlaster(g, false); }
 function drawRedFloat(g: G) { drawWaterBlaster(g, true); }
 
-/** Amalfi lemon — the dropped hazard. */
+/** Water balloon — a soft, glossy splash item. */
 function drawLemon(g: G) {
   contact(g);
   const body = new Path2D();
-  // a lemon: an ellipse with a nipple at each end, tilted
-  body.moveTo(-0.415, -0.135);
-  body.bezierCurveTo(-0.335, -0.335, 0.055, -0.385, 0.275, -0.235);
-  body.bezierCurveTo(0.455, -0.115, 0.475, 0.115, 0.315, 0.265);
-  body.bezierCurveTo(0.135, 0.425, -0.215, 0.375, -0.355, 0.185);
-  body.bezierCurveTo(-0.445, 0.065, -0.455, -0.045, -0.415, -0.135);
+  body.moveTo(0, -0.43);
+  body.bezierCurveTo(0.30, -0.20, 0.42, 0.03, 0.31, 0.27);
+  body.bezierCurveTo(0.20, 0.48, -0.20, 0.48, -0.31, 0.27);
+  body.bezierCurveTo(-0.42, 0.03, -0.30, -0.20, 0, -0.43);
   body.closePath();
-  fillKey(g, body, '#fff6b0', '#e8a30c', -0.40, 0.42);
-
-  // the one interior line the set allows: the pith seam
-  g.save();
-  g.clip(body);
-  g.strokeStyle = 'rgba(255,252,206,0.62)';
-  g.lineWidth = LW * 1.3;
-  g.beginPath();
-  g.moveTo(-0.305, -0.135);
-  g.bezierCurveTo(-0.185, -0.265, 0.065, -0.285, 0.205, -0.185);
-  g.stroke();
+  fillKey(g, body, '#f2fdff', '#35b9e6', -0.43, 0.46);
+  g.save(); g.clip(body);
+  g.strokeStyle = 'rgba(255,255,255,0.65)'; g.lineWidth = LW * 0.8;
+  g.beginPath(); g.moveTo(-0.20, -0.16); g.quadraticCurveTo(0, -0.29, 0.20, -0.16); g.stroke();
   g.restore();
-
-  // leaf
-  const leaf = new Path2D();
-  leaf.moveTo(0.135, -0.305);
-  leaf.bezierCurveTo(0.265, -0.475, 0.435, -0.475, 0.475, -0.395);
-  leaf.bezierCurveTo(0.425, -0.245, 0.245, -0.215, 0.135, -0.305);
-  leaf.closePath();
-  fillKey(g, leaf, '#9ecf6a', '#41702c', -0.48, -0.20);
+  const knot = new Path2D(); knot.ellipse(0, -0.40, 0.065, 0.045, 0, 0, Math.PI * 2);
+  fillKey(g, knot, '#ffffff', '#218ab8', -0.44, -0.30, LW * 0.7);
 }
 
 /** Golden Hour — the invulnerability item. The circuit's own light, weaponised. */
@@ -464,52 +449,23 @@ function drawSquall(g: G) {
   fillKey(g, bolt, '#fff6c2', '#f0a412', -0.10, 0.48);
 }
 
-/**
- * Harbour mine — the thrown/dropped explosive.
- *
- * The round-1 buoy read, in the review's words, "as nothing at a glance": a
- * cream-and-red hull with a grey mooring ring, which at 64 px is a lozenge
- * with a smudge under it. A moored contact mine keeps the harbour theme
- * exactly and reads as a bomb instantly, because horns on a dark sphere is
- * the one silhouette that can only mean one thing.
- */
+/** Splash canister — a harmless water burst item. */
 function drawMine(g: G) {
   contact(g);
-  const R = 0.285;
-  const CY = 0.075;
-
-  // Horns first, so the shell overlaps their roots. Five, fat and long: three
-  // thin spikes read as sun rays, which is what the first pass of this icon
-  // did and it is why it was unreadable.
-  for (let i = 0; i < 5; i++) {
-    const a = -Math.PI * 0.92 + (i * Math.PI * 0.84) / 4;
-    const cx = Math.cos(a), sy = Math.sin(a);
-    const horn = new Path2D();
-    const bx = cx * (R - 0.03), by = CY + sy * (R - 0.03);
-    const tx = cx * (R + 0.185), ty = CY + sy * (R + 0.185);
-    const px = -sy * 0.088, py = cx * 0.088;
-    horn.moveTo(bx + px, by + py);
-    horn.lineTo(tx + px * 0.46, ty + py * 0.46);
-    horn.lineTo(tx - px * 0.46, ty - py * 0.46);
-    horn.lineTo(bx - px, by - py);
-    horn.closePath();
-    fillKey(g, horn, '#d2dcec', '#4d5b73', -0.50, 0.20, LW * 0.9);
+  const bottle = new Path2D();
+  bottle.moveTo(-0.23, -0.25); bottle.lineTo(-0.16, -0.37);
+  bottle.lineTo(0.16, -0.37); bottle.lineTo(0.23, -0.25);
+  bottle.lineTo(0.29, 0.28); bottle.quadraticCurveTo(0.30, 0.38, 0.18, 0.39);
+  bottle.lineTo(-0.18, 0.39); bottle.quadraticCurveTo(-0.30, 0.38, -0.29, 0.28); bottle.closePath();
+  fillKey(g, bottle, '#c9f7ff', '#168fc2', -0.4, 0.4);
+  const cap = new Path2D(); cap.roundRect(-0.13, -0.47, 0.26, 0.12, 0.035);
+  fillKey(g, cap, '#ffffff', '#53b9dd', -0.5, -0.34);
+  const band = new Path2D(); band.roundRect(-0.25, -0.04, 0.50, 0.15, 0.04);
+  fillKey(g, band, '#e9fdff', '#46c9ed', -0.06, 0.12, LW * 0.75);
+  for (const [x,y,r] of [[-0.39,-0.28,0.07],[0.40,-0.18,0.055],[0.34,0.34,0.045]] as [number,number,number][]) {
+    const bubble = new Path2D(); bubble.arc(x,y,r,0,Math.PI*2);
+    fillKey(g,bubble,'#ffffff','#54c9ec',-0.1,0.1,LW*0.65);
   }
-
-  // shell — one silhouette, dark, so the horns read against the ground and the
-  // one red band reads against the shell
-  const shell = new Path2D();
-  shell.arc(0, CY, R, 0, Math.PI * 2);
-  fillKey(g, shell, '#4d5e77', '#0b1220', -0.28, 0.40);
-
-  g.save();
-  g.clip(shell);
-  const band = new Path2D();
-  band.rect(-0.5, CY - 0.10, 1, 0.135);
-  g.fillStyle = ramp(g, '#ff8478', '#b8241c', CY - 0.11, CY + 0.05);
-  g.fill(band);
-  g.restore();
-  key(g, shell);
 }
 
 /**
