@@ -80,6 +80,22 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 @media(max-width:1050px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.sidebar{width:66px;padding:18px 8px}.brand{padding:0 9px 28px}.brand-copy,.nav-label,.nav-text,.side-bottom{display:none}.brand-mark{flex:none}.nav-link{justify-content:center;padding:12px 5px}.nav-icon{font-size:18px}.main{margin-left:66px}.topbar{height:64px;padding:0 14px;gap:8px}.top-note{display:none}.content{padding:27px 15px 34px}.page-head{align-items:start;flex-direction:column;gap:7px;margin-bottom:22px}.count{padding:0}.games{grid-template-columns:1fr;gap:12px}.cover{height:145px}.desc{min-height:0}.section-head{margin-bottom:12px}}
 @media(min-width:701px) and (max-width:850px){.sidebar{width:190px}.main{margin-left:190px}.games{grid-template-columns:repeat(2,minmax(0,1fr))}.cover{height:145px}}
+
+.player-modal{display:none;position:fixed;inset:0;z-index:30;background:#08090bf2;padding:clamp(8px,2vw,22px);align-items:center;justify-content:center}
+.player-modal.open{display:flex}
+.player-shell{width:min(1500px,100%);height:min(940px,100%);display:flex;flex-direction:column;background:#141619;border:1px solid #34383d;border-radius:12px;overflow:hidden;box-shadow:0 24px 90px #000b}
+.player-top{min-height:54px;display:flex;align-items:center;gap:12px;padding:8px 12px 8px 17px;border-bottom:1px solid #30343a}
+.player-title{font-weight:750;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.player-action{border:1px solid #444950;background:#24282e;color:#eee;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.player-action:hover{background:#343a42}
+.player-close{background:#d65b52;border-color:#d65b52}
+.player-frame-wrap{position:relative;flex:1;min-height:0;background:#08090b}
+.player-frame{width:100%;height:100%;border:0;background:#08090b}
+.player-note{position:absolute;left:12px;right:12px;bottom:10px;margin:auto;width:max-content;max-width:calc(100% - 24px);padding:7px 10px;background:#111d;color:#bbb;border:1px solid #5558;border-radius:6px;font-size:11px;pointer-events:none;opacity:0;transition:opacity .2s}
+.player-frame-wrap.show-note .player-note{opacity:1}
+@media(max-width:700px){.player-modal{padding:0}.player-shell{height:100%;border-radius:0;border:0}.player-top{min-height:52px;padding:7px 9px}.player-action{padding:8px}.player-frame-wrap{padding-bottom:env(safe-area-inset-bottom)}}
+
 </style>
 </head>
 <body>
@@ -213,6 +229,48 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <div class="cover" style="background:linear-gradient(145deg,#527eac,#1d3552 75%)"><span class="cover-symbol">🐧</span><span class="cover-label">Progression</span></div>
 <div class="card-body"><div class="meta"><span class="tag">Progression</span><span class="tag">Funny School</span></div><h3>Learn to Fly 3</h3><p class="desc">Upgrade a penguin's flight gear, unlock islands and improve each flight attempt.</p><div class="card-foot"><a class="play" href="https://funny-school.github.io/game/learntofly3/" target="_blank" rel="noopener noreferrer">Play game <span>↗</span></a><span class="status">External · Featured</span></div></div>
 </article>
+
+<article class="game-card" data-name="hidden objects brain teaser tyrone" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#8a744e,#342c20 75%)"><span class="cover-symbol">🔎</span><span class="cover-label">Find · Observe · Solve</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Puzzle</span><span class="tag">Tyrone Games</span></div><h3>Hidden Objects</h3><p class="desc">Search detailed scenes for hidden objects and solve visual puzzles.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://tyronegames.gitlab.io/game/hidden-objects-brain-teaser.html">Play game <span>▶</span></a><span class="status">Embedded · Tyrone</span></div></div>
+</article>
+<article class="game-card" data-name="cut the rope tyrone" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#4e8d73,#1b382e 75%)"><span class="cover-symbol">🍬</span><span class="cover-label">Cut · Swing · Collect</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Physics Puzzle</span><span class="tag">Tyrone Games</span></div><h3>Cut the Rope</h3><p class="desc">Solve physics puzzles and guide candy to a hungry little monster.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://tyronegames.gitlab.io/game/cut-the-rope.html">Play game <span>▶</span></a><span class="status">Embedded · Tyrone</span></div></div>
+</article>
+<article class="game-card" data-name="fireboy watergirl forest temple tyrone" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#a35a3f,#3d2521 75%)"><span class="cover-symbol">🔥</span><span class="cover-label">Co-op · Explore · Solve</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Co-op Puzzle</span><span class="tag">Tyrone Games</span></div><h3>Fireboy and Watergirl</h3><p class="desc">Work together through the Forest Temple using two characters with different abilities.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://tyronegames.gitlab.io/game/fireboy-and-watergirl-1-forest-temple.html">Play game <span>▶</span></a><span class="status">Embedded · Tyrone</span></div></div>
+</article>
+<article class="game-card" data-name="basketball stars tyrone" data-category="sports">
+<div class="cover" style="background:linear-gradient(145deg,#9b653d,#3c281d 75%)"><span class="cover-symbol">🏀</span><span class="cover-label">Dribble · Pass · Score</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Sports</span><span class="tag">Tyrone Games</span></div><h3>Basketball Stars</h3><p class="desc">Play quick basketball matches with skill-based controls and different modes.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://tyronegames.gitlab.io/game/basketball-stars.html">Play game <span>▶</span></a><span class="status">Embedded · Tyrone</span></div></div>
+</article>
+<article class="game-card" data-name="happy glass tyrone" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#478da1,#1b3541 75%)"><span class="cover-symbol">🥛</span><span class="cover-label">Draw · Pour · Solve</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Physics Puzzle</span><span class="tag">Tyrone Games</span></div><h3>Happy Glass</h3><p class="desc">Draw paths and solve physics puzzles to fill the glass.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://tyronegames.gitlab.io/game/happy-glass.html">Play game <span>▶</span></a><span class="status">Embedded · Tyrone</span></div></div>
+</article>
+<article class="game-card" data-name="crossword kingdom tyrone" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#76649b,#28223e 75%)"><span class="cover-symbol">🔤</span><span class="cover-label">Words · Clues · Puzzles</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Word Puzzle</span><span class="tag">Tyrone Games</span></div><h3>Crossword Kingdom</h3><p class="desc">Solve word clues and complete crossword-style puzzle boards.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://tyronegames.gitlab.io/game/crossword-kingdom.html">Play game <span>▶</span></a><span class="status">Embedded · Tyrone</span></div></div>
+</article>
+<article class="game-card" data-name="tetris newgen" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#4875a4,#1b2944 75%)"><span class="cover-symbol">🧱</span><span class="cover-label">Stack · Clear · Repeat</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Classic Puzzle</span><span class="tag">NewGEN</span></div><h3>Tetris</h3><p class="desc">Fit falling blocks together to complete rows and keep the board clear.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://sites.google.com/view/newgengames/retro-games/tetris">Play game <span>▶</span></a><span class="status">Embedded · NewGEN</span></div></div>
+</article>
+<article class="game-card" data-name="circloo newgen" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#5b8c85,#1d3837 75%)"><span class="cover-symbol">⭕</span><span class="cover-label">Roll · Jump · Navigate</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Physics Puzzle</span><span class="tag">NewGEN</span></div><h3>CircloO</h3><p class="desc">Guide a small circle through expanding physics-based puzzle levels.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://sites.google.com/view/newgengames/other/puzzle/circloo">Play game <span>▶</span></a><span class="status">Embedded · NewGEN</span></div></div>
+</article>
+<article class="game-card" data-name="cell machine newgen" data-category="puzzle">
+<div class="cover" style="background:linear-gradient(145deg,#4e668e,#1d2941 75%)"><span class="cover-symbol">⚙️</span><span class="cover-label">Build · Test · Discover</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Logic Puzzle</span><span class="tag">NewGEN</span></div><h3>Cell Machine</h3><p class="desc">Build compact machines from simple parts and solve logic challenges.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://sites.google.com/view/newgengames/other/puzzle/cell-machine">Play game <span>▶</span></a><span class="status">Embedded · NewGEN</span></div></div>
+</article>
+<article class="game-card" data-name="cookie clicker newgen" data-category="simulation">
+<div class="cover" style="background:linear-gradient(145deg,#9a6a45,#40291e 75%)"><span class="cover-symbol">🍪</span><span class="cover-label">Click · Bake · Upgrade</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Idle / Simulation</span><span class="tag">NewGEN</span></div><h3>Cookie Clicker</h3><p class="desc">Bake cookies, unlock upgrades and grow your cookie production.</p><div class="card-foot"><a class="play embed-play" href="#" data-embed-url="https://sites.google.com/view/newgengames/other/cookie-clicker">Play game <span>▶</span></a><span class="status">Embedded · NewGEN</span></div></div>
+</article>
+
 </div>
 
 <div class="empty" id="emptyState"><strong>No games found</strong>Try another name or category.</div>
@@ -221,8 +279,62 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 </div>
 </main>
 </div>
+
+<div class="player-modal" id="playerModal" role="dialog" aria-modal="true" aria-label="Game player">
+  <div class="player-shell">
+    <div class="player-top">
+      <div class="player-title" id="playerTitle">Loading game…</div>
+      <div class="player-actions">
+        <a class="player-action" id="playerOpenSource" href="#" target="_blank" rel="noopener noreferrer">Open source ↗</a>
+        <button class="player-action" id="playerFullscreen" type="button">Fullscreen ⛶</button>
+        <button class="player-action player-close" id="playerClose" type="button">Close ✕</button>
+      </div>
+    </div>
+    <div class="player-frame-wrap" id="playerFrameWrap">
+      <iframe class="player-frame" id="playerFrame" title="Embedded game" allow="autoplay; fullscreen; gamepad; pointer-lock; accelerometer; gyroscope" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe>
+      <div class="player-note">If the game area stays blank, its host may block embedding. Use “Open source” to check the provider page.</div>
+    </div>
+  </div>
+</div>
+
 <script>
 (()=>{const input=document.getElementById('gameSearch');const cards=[...document.querySelectorAll('.game-card')];const links=[...document.querySelectorAll('.nav-link[data-filter]')];const count=document.getElementById('resultCount');const empty=document.getElementById('emptyState');const hint=document.getElementById('sectionHint');let filter='all';function update(){const q=input.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const matchName=card.dataset.name.includes(q);const matchFilter=filter==='all'||card.dataset.category===filter;const visible=matchName&&matchFilter;card.hidden=!visible;if(visible)shown++});count.textContent=shown+' game'+(shown===1?'':'s')+' available';empty.style.display=shown?'none':'block';hint.textContent=({all:'Browse the collection',strategy:'Strategy games',puzzle:'Puzzle games',action:'Action games',racing:'Racing games',sports:'Sports games',simulation:'Simulation games',adventure:'Adventure games'})[filter]||'Browse the collection'}input.addEventListener('input',update);links.forEach(link=>link.addEventListener('click',()=>{filter=link.dataset.filter;links.forEach(item=>item.classList.toggle('active',item===link));update()}));update()})();
 </script>
+
+<script>
+(()=> {
+ const modal=document.getElementById('playerModal');
+ const frame=document.getElementById('playerFrame');
+ const title=document.getElementById('playerTitle');
+ const source=document.getElementById('playerOpenSource');
+ const close=document.getElementById('playerClose');
+ const fullscreen=document.getElementById('playerFullscreen');
+ const wrap=document.getElementById('playerFrameWrap');
+ function closePlayer(){modal.classList.remove('open');frame.src='about:blank';wrap.classList.remove('show-note');document.body.style.overflow='';}
+ document.addEventListener('click',e=>{
+   const link=e.target.closest('a.embed-play[data-embed-url]');
+   if(!link)return;
+   e.preventDefault();
+   const url=link.dataset.embedUrl;
+   if(!url || !url.startsWith('https://'))return;
+   const card=link.closest('.game-card');
+   title.textContent=card?.querySelector('h3')?.textContent || 'Game';
+   source.href=url;
+   frame.src=url;
+   modal.classList.add('open');
+   document.body.style.overflow='hidden';
+   wrap.classList.add('show-note');
+   window.setTimeout(()=>wrap.classList.remove('show-note'),6500);
+   close.focus();
+ });
+ close.addEventListener('click',closePlayer);
+ modal.addEventListener('click',e=>{if(e.target===modal)closePlayer();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))closePlayer();});
+ fullscreen.addEventListener('click',async()=>{
+   try{if(!document.fullscreenElement)await document.querySelector('.player-shell').requestFullscreen();else await document.exitFullscreen();}catch(_){}
+ });
+})();
+</script>
+
 </body>
 </html>
