@@ -55,6 +55,9 @@ h1{font-size:clamp(29px,4vw,39px);line-height:1.1;letter-spacing:-1.2px;margin:7
 .cover.kart{background:linear-gradient(145deg,#14506b,#10243b 75%)}
 .cover.kart:before{width:220px;height:120px;border:1px solid #74dff055;border-radius:50%;transform:rotate(-20deg)}
 .cover.kart:after{width:110px;height:110px;border:1px solid #74dff033;border-radius:50%}
+.cover.rota{background:linear-gradient(145deg,#465d88,#1a203d 75%)}
+.cover.rota:before{width:220px;height:120px;border:1px solid #b7d4ff55;border-radius:50%;transform:rotate(-20deg)}
+.cover.rota:after{width:110px;height:110px;border:1px solid #b7d4ff33;border-radius:50%}
 .cover.arena{background:linear-gradient(145deg,#293b43,#182126 75%)}
 .cover.arena:before{width:220px;height:120px;border:1px solid #9db7bd44;border-radius:50%;transform:rotate(-20deg)}
 .cover.arena:after{width:110px;height:110px;border:1px solid #9db7bd33;border-radius:50%}
@@ -88,6 +91,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <a class="nav-link active" href="#games" data-filter="all"><span class="nav-icon">▦</span><span class="nav-text">All games</span></a>
 <a class="nav-link" href="#games" data-filter="strategy"><span class="nav-icon">⚔</span><span class="nav-text">Strategy</span></a>
 <a class="nav-link" href="#games" data-filter="action"><span class="nav-icon">◈</span><span class="nav-text">Action</span></a>
+<a class="nav-link" href="#games" data-filter="puzzle"><span class="nav-icon">⬡</span><span class="nav-text">Puzzle</span></a>
 </nav>
 <div class="side-bottom">Your place to play.<br>More games coming soon.</div>
 </aside>
@@ -99,7 +103,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 <div class="content">
 <section class="page-head">
 <div><div class="eyebrow">The game room</div><h1>Find your next game.</h1><p class="intro">A growing collection of games. Pick one and jump in.</p></div>
-<div class="count" id="resultCount">4 games available</div>
+<div class="count" id="resultCount">5 games available</div>
 </section>
 <section id="games">
 <div class="section-head"><h2>All games</h2><span id="sectionHint">Browse the collection</span></div>
@@ -122,6 +126,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 </article>
 </div>
 
+<article class="game-card" data-name="rota bend gravity gravity puzzle platformer" data-category="puzzle">
+<div class="cover rota"><span class="cover-symbol">⤾</span><span class="cover-label">Bend · Rotate · Solve</span></div>
+<div class="card-body"><div class="meta"><span class="tag">Puzzle</span><span class="tag">Browser</span></div><h3>ROTA: Bend Gravity</h3><p class="desc">Rotate gravity, move blocks and solve colourful platform puzzles across eight worlds.</p><div class="card-foot"><a class="play" href="https://harmonymonroe.itch.io/rota" target="_blank" rel="noopener noreferrer">Play on itch.io <span>↗</span></a><span class="status">External game</span></div></div>
+</article>
 <div class="empty" id="emptyState"><strong>No games found</strong>Try another name or category.</div>
 </section>
 <footer><span>RESPAWN</span><span>Play more. Respawn.</span></footer>
@@ -129,7 +137,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:17px;display
 </main>
 </div>
 <script>
-(()=>{const input=document.getElementById('gameSearch');const cards=[...document.querySelectorAll('.game-card')];const links=[...document.querySelectorAll('.nav-link[data-filter]')];const count=document.getElementById('resultCount');const empty=document.getElementById('emptyState');const hint=document.getElementById('sectionHint');let filter='all';function update(){const q=input.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const matchName=card.dataset.name.includes(q);const matchFilter=filter==='all'||card.dataset.category===filter;const visible=matchName&&matchFilter;card.hidden=!visible;if(visible)shown++});count.textContent=shown+' game'+(shown===1?'':'s')+' available';empty.style.display=shown?'none':'block';hint.textContent=filter==='all'?'Browse the collection':filter==='strategy'?'Strategy games': 'Action games'}input.addEventListener('input',update);links.forEach(link=>link.addEventListener('click',()=>{filter=link.dataset.filter;links.forEach(item=>item.classList.toggle('active',item===link));update()}));update()})();
+(()=>{const input=document.getElementById('gameSearch');const cards=[...document.querySelectorAll('.game-card')];const links=[...document.querySelectorAll('.nav-link[data-filter]')];const count=document.getElementById('resultCount');const empty=document.getElementById('emptyState');const hint=document.getElementById('sectionHint');let filter='all';function update(){const q=input.value.trim().toLowerCase();let shown=0;cards.forEach(card=>{const matchName=card.dataset.name.includes(q);const matchFilter=filter==='all'||card.dataset.category===filter;const visible=matchName&&matchFilter;card.hidden=!visible;if(visible)shown++});count.textContent=shown+' game'+(shown===1?'':'s')+' available';empty.style.display=shown?'none':'block';hint.textContent=filter==='all'?'Browse the collection':filter==='strategy'?'Strategy games':filter==='puzzle'?'Puzzle games':'Action games'}input.addEventListener('input',update);links.forEach(link=>link.addEventListener('click',()=>{filter=link.dataset.filter;links.forEach(item=>item.classList.toggle('active',item===link));update()}));update()})();
 </script>
 </body>
 </html>
