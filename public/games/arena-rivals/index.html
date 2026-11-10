@@ -830,10 +830,10 @@ $('game').addEventListener('pointerdown',e=>{
  if(e.pointerType!=='touch'||!active||e.target.closest('button'))return;
  if(e.cancelable)e.preventDefault();const mid=innerWidth/2,which=e.clientX<mid?'move':'aim';
  if((which==='move'&&stick)||(which==='aim'&&aimStick))return;
- const st=showStick(which,e.clientX,e.clientY);st.pointerId=e.pointerId;touchSticks.set(e.pointerId,st);updateTouchStick(st,e);if(which==='aim')autoShoot();
+ const st=showStick(which,e.clientX,e.clientY);st.pointerId=e.pointerId;touchSticks.set(e.pointerId,st);updateTouchStick(st,e);
 });
 addEventListener('pointermove',e=>{const st=touchSticks.get(e.pointerId);if(st)updateTouchStick(st,e)});
-function endTouch(e){const st=touchSticks.get(e.pointerId);if(!st)return;if(st.which==='aim'&&player&&player.hp>0&&Math.hypot(st.dx,st.dy)>.12){player.face=Math.atan2(st.dy,st.dx);fire(player,player.x+Math.cos(player.face)*700,player.y+Math.sin(player.face)*700)}st.el.style.display='none';st.el.querySelector('i').style.transform='';if(st.which==='move')stick=null;else aimStick=null;touchSticks.delete(e.pointerId)}
+function endTouch(e){const st=touchSticks.get(e.pointerId);if(!st)return;if(st.which==='aim'&&player&&player.hp>0){if(Math.hypot(st.dx,st.dy)>.12){player.face=Math.atan2(st.dy,st.dx);fire(player,player.x+Math.cos(player.face)*700,player.y+Math.sin(player.face)*700)}else autoShoot()}st.el.style.display='none';st.el.querySelector('i').style.transform='';if(st.which==='move')stick=null;else aimStick=null;touchSticks.delete(e.pointerId)}
 addEventListener('pointerup',endTouch);addEventListener('pointercancel',endTouch);
 })();
 </script></body></html>
