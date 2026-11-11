@@ -127,7 +127,7 @@ const touchDevice=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 function syncMobileControls(){const m=$('mobile');if(m)m.style.display=active&&touchDevice?'block':'none'}
 function resize(){const dpr=Math.min(2.5,Math.max(1,window.devicePixelRatio||1));canvas.width=Math.max(640,Math.round(innerWidth*dpr));canvas.height=Math.max(480,Math.round(innerHeight*dpr));ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high'}addEventListener('resize',()=>{resize();syncMobileControls()});resize();
 const glCanvas=$('world3d');
-const gl=glCanvas.getContext('webgl2',{antialias:true,alpha:false,powerPreference:'high-performance'})||glCanvas.getContext('webgl',{antialias:true,alpha:false});
+const gl=glCanvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'});
 let glReady=false,glProgram,glMeshes={},glLocations={},glDpr=1;
 function shader(type,source){const sh=gl.createShader(type);gl.shaderSource(sh,source);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(sh));return sh}
 function init3D(){
@@ -145,7 +145,7 @@ function sphereData(cols,rows){let a=[];for(let y=0;y<rows;y++)for(let x=0;x<col
 function cylinderData(n){let a=[];for(let i=0;i<n;i++){let a0=i/n*Math.PI*2,a1=(i+1)/n*Math.PI*2,p0=[Math.cos(a0)*.5,-.5,Math.sin(a0)*.5],p1=[Math.cos(a1)*.5,-.5,Math.sin(a1)*.5],p2=[Math.cos(a1)*.5,.5,Math.sin(a1)*.5],p3=[Math.cos(a0)*.5,.5,Math.sin(a0)*.5];for(const p of [p0,p1,p2,p0,p2,p3]){let nrm=[p[0]*2,0,p[2]*2];a.push(...p,...nrm)}}return a}
 function matMul(a,b){let o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o}
 function perspective(fov,aspect,near,far){let f=1/Math.tan(fov/2),nf=1/(near-far);return new Float32Array([f/aspect,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0])}
-function viewMatrix(ex,ey,ez,yaw){let fx=Math.cos(yaw),fz=Math.sin(yaw),fl=1,rx=-fz,rz=fx;return new Float32Array([rx,0,-rz,0,0,1,0,0,fx,0,fz,0,-(rx*ex+rz*ez),-ey,-(fx*ex+fz*ez),1])}
+function viewMatrix(ex,ey,ez,yaw){let fx=Math.cos(yaw),fz=Math.sin(yaw),rx=-fz,rz=fx;return new Float32Array([rx,0,-fx,0,0,1,0,0,rz,0,-fz,0,-(rx*ex+rz*ez),-ey,fx*ex+fz*ez,1])}
 function modelMatrix(x,y,z,sx,sy,sz){return new Float32Array([sx,0,0,0,0,sy,0,0,0,0,sz,0,x,y,z,1])}
 function drawMesh(mesh,x,y,z,sx,sy,sz,color,em=0){if(!mesh)return;const model=modelMatrix(x,y,z,sx,sy,sz);gl.uniformMatrix4fv(glLocations.model,false,model);gl.uniform3fv(glLocations.color,color);gl.uniform1f(glLocations.emissive,em);if(mesh.vao)gl.bindVertexArray(mesh.vao);else{gl.bindBuffer(gl.ARRAY_BUFFER,mesh.vb);gl.vertexAttribPointer(glLocations.pos,3,gl.FLOAT,false,24,0);gl.vertexAttribPointer(glLocations.normal,3,gl.FLOAT,false,24,12)}gl.drawArrays(gl.TRIANGLES,0,mesh.count)}
 function hexColor(hex){let n=parseInt(hex.replace('#',''),16);return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]}
