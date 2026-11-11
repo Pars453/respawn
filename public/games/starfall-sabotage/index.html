@@ -142,9 +142,16 @@ function init3D(){
   const grid=new T.GridHelper(Math.max(W,H),Math.max(W,H),0x4e8794,0x315264);grid.position.set(W/2,.012,H/2);grid.material.transparent=true;grid.material.opacity=.22;scene3D.add(grid);
   const wallMat=new T.MeshStandardMaterial({color:0x344c60,roughness:.58,metalness:.28}),trimMat=new T.MeshStandardMaterial({color:0x48cbd0,emissive:0x126b75,emissiveIntensity:.65,metalness:.55,roughness:.3});
   const wallGeo=new T.BoxGeometry(1,3.7,1),trimGeo=new T.BoxGeometry(1.01,.075,1.01);
+  const panelMat=new T.MeshStandardMaterial({color:0x526d80,roughness:.5,metalness:.42}),panelGlow=new T.MeshStandardMaterial({color:0x68e5e4,emissive:0x168d98,emissiveIntensity:.9,metalness:.5,roughness:.28});
+  const panelFront=new T.BoxGeometry(.58,1.42,.045),panelSide=new T.BoxGeometry(.045,1.42,.58),panelLineFront=new T.BoxGeometry(.42,.045,.06),panelLineSide=new T.BoxGeometry(.06,.045,.42);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y][x]){
    const wall=new T.Mesh(wallGeo,wallMat);wall.position.set(x+.5,1.85,y+.5);wall.castShadow=true;wall.receiveShadow=true;scene3D.add(wall);
    const trim=new T.Mesh(trimGeo,trimMat);trim.position.set(x+.5,3.58,y+.5);scene3D.add(trim);
+   const sides=[{open:!map[y-1]?.[x],px:x+.5,pz:y+.025,front:true},{open:!map[y+1]?.[x],px:x+.5,pz:y+.975,front:true},{open:!map[y]?.[x-1],px:x+.025,pz:y+.5,front:false},{open:!map[y]?.[x+1],px:x+.975,pz:y+.5,front:false}];
+   for(const side of sides)if(side.open){
+    const panel=new T.Mesh(side.front?panelFront:panelSide,panelMat);panel.position.set(side.px,1.72,side.pz);panel.castShadow=true;scene3D.add(panel);
+    const line=new T.Mesh(side.front?panelLineFront:panelLineSide,panelGlow);line.position.set(side.px,2.18,side.pz);scene3D.add(line);
+   }
   }
   const ceil=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({color:0x101f2c,roughness:.95,metalness:.12,side:T.DoubleSide}));ceil.rotation.x=Math.PI/2;ceil.position.set(W/2,3.72,H/2);scene3D.add(ceil);
   for(let x=2;x<W-1;x+=4){const lamp=new T.Mesh(new T.BoxGeometry(1.55,.055,.24),new T.MeshStandardMaterial({color:0x9cfaff,emissive:0x43d9ef,emissiveIntensity:2.3}));lamp.position.set(x,3.58,5.5);scene3D.add(lamp);const pl=new T.PointLight(0x42dff5,1.15,8,2);pl.position.set(x,3.25,5.5);scene3D.add(pl)}
