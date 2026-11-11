@@ -97,29 +97,24 @@ html,body,#game{background:#080d1c}
 const canvas=document.getElementById('view'),ctx=canvas.getContext('2d'),mini=document.getElementById('minimap'),mctx=mini.getContext('2d');
 const $=id=>document.getElementById(id);
 const W=24,H=18;
-const raw=[
-"########################",
-"#....#.......#.........#",
-"#....#.......#.........#",
-"#....#.......#.........#",
-"#....####.####....##...#",
-"#......................#",
-"#.####....##....####...#",
-"#....#....##....#......#",
-"#....#..........#......#",
-"###.######.######.######",
-"#....#..........#......#",
-"#....#....##....#......#",
-"#.####....##....####...#",
-"#......................#",
-"#...##....####....##...#",
-"#.........#............#",
-"#.........#............#",
-"########################"
-];
+// Original six-sector "Convergence Station" layout: bridge, greenhouse,
+// communications, laboratory, reactor/cafeteria, engine room and docks.
+const raw=Array.from({length:H},(_,y)=>Array.from({length:W},(_,x)=>{
+ const edge=x===0||y===0||x===W-1||y===H-1;
+ const vertical=(x===7||x===16)&&y>0&&y<H-1&&y!==3&&y!==13;
+ const horizontal=(y===7||y===10)&&x>0&&x<W-1&&![3,11,20].includes(x);
+ return edge||vertical||horizontal?'#':'.';
+}).join(''));
 let map=raw.map(r=>r.split('').map(c=>c==='#'?1:0));
-const tasks=[{x:3.4,y:2.4,name:'Calibrate Navigation',room:'BRIDGE'},{x:19.5,y:2.5,name:'Align Antenna',room:'COMMS'},{x:7.5,y:5.3,name:'Upload Research',room:'LAB'},{x:17.5,y:7.2,name:'Restore Power',room:'ENGINE'},{x:4.2,y:14.2,name:'Purge Airlock',room:'DOCK'}];
-const spawnCrew=[{x:5.5,y:5.5},{x:6.3,y:5.7},{x:15.5,y:5.4},{x:16.5,y:5.8},{x:18.5,y:13.5},{x:8.5,y:13.5}];
+const tasks=[
+ {x:3.4,y:3.2,name:'Calibrate Navigation',room:'BRIDGE'},
+ {x:11.5,y:3.2,name:'Grow Bio-Samples',room:'GREENHOUSE'},
+ {x:20.2,y:3.2,name:'Align Antenna',room:'COMMS'},
+ {x:3.4,y:13.1,name:'Upload Research',room:'LAB'},
+ {x:11.5,y:13.1,name:'Restore Power',room:'ENGINE'},
+ {x:20.2,y:13.1,name:'Purge Airlock',room:'DOCK'}
+];
+const spawnCrew=[{x:10.2,y:8.5},{x:13.8,y:8.5},{x:5.2,y:8.5},{x:18.8,y:8.5},{x:11.5,y:5.2},{x:11.5,y:11.8}];
 let player,crew=[],role='crew',active=false,last=0,elapsed=0,completed=0,taskProgress=0,nearTask=null,nearCrew=null,sab='none',sabUntil=0,sabCooldown=0,doorsUntil=0,toastUntil=0,win=false,keys={},pointer=false,mouseDX=0,moveTouch={x:0,y:0},lookTouch=null,holdUse=false,tagCooldown=0,roundTime=180;
 const colors=['#ff5d73','#35c8ff','#b58aff','#65e58b','#ffc34d','#ff83d1'];
 const touchDevice=('ontouchstart' in window)||navigator.maxTouchPoints>0;
@@ -138,25 +133,72 @@ function init3D(){
   camera3D=new T.PerspectiveCamera(78,innerWidth/innerHeight,.08,90);camera3D.position.set(12,1.62,5.4);
   scene3D.add(new T.HemisphereLight(0x9bdfff,0x17202e,1.55));
   const key=new T.DirectionalLight(0xc4f4ff,2.15);key.position.set(-7,13,8);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=15;key.shadow.camera.bottom=-15;scene3D.add(key);
-  const floor=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({color:0x24394a,roughness:.78,metalness:.18}));floor.rotation.x=-Math.PI/2;floor.position.set(W/2,0,H/2);floor.receiveShadow=true;scene3D.add(floor);
-  const grid=new T.GridHelper(Math.max(W,H),Math.max(W,H),0x4e8794,0x315264);grid.position.set(W/2,.012,H/2);grid.material.transparent=true;grid.material.opacity=.22;scene3D.add(grid);
-  const wallMat=new T.MeshStandardMaterial({color:0x344c60,roughness:.58,metalness:.28}),trimMat=new T.MeshStandardMaterial({color:0x48cbd0,emissive:0x126b75,emissiveIntensity:.65,metalness:.55,roughness:.3});
-  const wallGeo=new T.BoxGeometry(1,3.7,1),trimGeo=new T.BoxGeometry(1.01,.075,1.01);
-  const panelMat=new T.MeshStandardMaterial({color:0x526d80,roughness:.5,metalness:.42}),panelGlow=new T.MeshStandardMaterial({color:0x68e5e4,emissive:0x168d98,emissiveIntensity:.9,metalness:.5,roughness:.28});
-  const panelFront=new T.BoxGeometry(.58,1.42,.045),panelSide=new T.BoxGeometry(.045,1.42,.58),panelLineFront=new T.BoxGeometry(.42,.045,.06),panelLineSide=new T.BoxGeometry(.06,.045,.42);
+  const floorBase=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({color:0x172b3b,roughness:.9,metalness:.12}));floorBase.rotation.x=-Math.PI/2;floorBase.position.set(W/2,-.055,H/2);floorBase.receiveShadow=true;scene3D.add(floorBase);
+  const roomAt=(x,y)=>{
+   if(y<7){if(x<7)return {name:'BRIDGE',color:0x234b66,glow:0x39bdf4};if(x<16)return {name:'GREENHOUSE',color:0x245c4c,glow:0x66efad};return {name:'COMMS',color:0x3b356a,glow:0xa58bff}}
+   if(y>10){if(x<7)return {name:'LAB',color:0x3b4668,glow:0x7dbdff};if(x<16)return {name:'ENGINE',color:0x65432f,glow:0xffa35e};return {name:'DOCK',color:0x31515b,glow:0x67e7e3}}
+   return {name:'CAFETERIA / REACTOR',color:0x34465f,glow:0x72dff1};
+  };
+  const floorMats={};
+  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++)if(!map[y][x]){
+   const room=roomAt(x,y),key=room.name;
+   if(!floorMats[key])floorMats[key]=new T.MeshStandardMaterial({color:room.color,roughness:.72,metalness:.24});
+   const tile=new T.Mesh(new T.BoxGeometry(.985,.055,.985),floorMats[key]);tile.position.set(x+.5,-.008,y+.5);tile.receiveShadow=true;scene3D.add(tile);
+   const seam=new T.Mesh(new T.BoxGeometry(.018,.008,.91),new T.MeshBasicMaterial({color:room.glow,transparent:true,opacity:.24}));seam.position.set(x+.5,.022,y+.5);scene3D.add(seam);
+  }
+  const wallGeo=new T.BoxGeometry(1,3.7,1),trimGeo=new T.BoxGeometry(1.015,.085,1.015);
+  const wallMats=[
+   new T.MeshStandardMaterial({color:0x31556a,roughness:.48,metalness:.42}),
+   new T.MeshStandardMaterial({color:0x365b50,roughness:.52,metalness:.34}),
+   new T.MeshStandardMaterial({color:0x51466f,roughness:.45,metalness:.42}),
+   new T.MeshStandardMaterial({color:0x425b7c,roughness:.5,metalness:.38}),
+   new T.MeshStandardMaterial({color:0x684b38,roughness:.54,metalness:.3}),
+   new T.MeshStandardMaterial({color:0x3c6067,roughness:.5,metalness:.4})
+  ];
+  const trimMats=[0x4bd5ff,0x72edaa,0xb29aff,0x78bfff,0xffb16d,0x6ce8e2].map(c=>new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.72,metalness:.55,roughness:.28}));
+  const panelMats=wallMats.map(m=>new T.MeshStandardMaterial({color:m.color,roughness:.38,metalness:.58}));
+  const glowMats=trimMats;
+  const panelFront=new T.BoxGeometry(.62,1.35,.055),panelSide=new T.BoxGeometry(.055,1.35,.62);
+  const lineFront=new T.BoxGeometry(.42,.055,.07),lineSide=new T.BoxGeometry(.07,.055,.42);
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y][x]){
-   const wall=new T.Mesh(wallGeo,wallMat);wall.position.set(x+.5,1.85,y+.5);wall.castShadow=true;wall.receiveShadow=true;scene3D.add(wall);
-   const trim=new T.Mesh(trimGeo,trimMat);trim.position.set(x+.5,3.58,y+.5);scene3D.add(trim);
+   const room=roomAt(Math.max(1,Math.min(W-2,x)),Math.max(1,Math.min(H-2,y)));
+   const idx=room.name==='BRIDGE'?0:room.name==='GREENHOUSE'?1:room.name==='COMMS'?2:room.name==='LAB'?3:room.name==='ENGINE'?4:5;
+   const wall=new T.Mesh(wallGeo,wallMats[idx]);wall.position.set(x+.5,1.85,y+.5);wall.castShadow=true;wall.receiveShadow=true;scene3D.add(wall);
+   const trim=new T.Mesh(trimGeo,trimMats[idx]);trim.position.set(x+.5,3.58,y+.5);scene3D.add(trim);
    const sides=[{open:!map[y-1]?.[x],px:x+.5,pz:y+.025,front:true},{open:!map[y+1]?.[x],px:x+.5,pz:y+.975,front:true},{open:!map[y]?.[x-1],px:x+.025,pz:y+.5,front:false},{open:!map[y]?.[x+1],px:x+.975,pz:y+.5,front:false}];
    for(const side of sides)if(side.open){
-    const panel=new T.Mesh(side.front?panelFront:panelSide,panelMat);panel.position.set(side.px,1.72,side.pz);panel.castShadow=true;scene3D.add(panel);
-    const line=new T.Mesh(side.front?panelLineFront:panelLineSide,panelGlow);line.position.set(side.px,2.18,side.pz);scene3D.add(line);
+    const panel=new T.Mesh(side.front?panelFront:panelSide,panelMats[idx]);panel.position.set(side.px,1.72,side.pz);scene3D.add(panel);
+    const line=new T.Mesh(side.front?lineFront:lineSide,glowMats[idx]);line.position.set(side.px,2.18,side.pz);scene3D.add(line);
    }
   }
-  const ceil=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({color:0x101f2c,roughness:.95,metalness:.12,side:T.DoubleSide}));ceil.rotation.x=Math.PI/2;ceil.position.set(W/2,3.72,H/2);scene3D.add(ceil);
-  for(let x=2;x<W-1;x+=4){const lamp=new T.Mesh(new T.BoxGeometry(1.55,.055,.24),new T.MeshStandardMaterial({color:0x9cfaff,emissive:0x43d9ef,emissiveIntensity:2.3}));lamp.position.set(x,3.58,5.5);scene3D.add(lamp);const pl=new T.PointLight(0x42dff5,1.15,8,2);pl.position.set(x,3.25,5.5);scene3D.add(pl)}
+  const ceilingMat=new T.MeshStandardMaterial({color:0x101b30,roughness:.95,metalness:.16,side:T.DoubleSide});
+  const ceil=new T.Mesh(new T.PlaneGeometry(W,H),ceilingMat);ceil.rotation.x=Math.PI/2;ceil.position.set(W/2,3.72,H/2);scene3D.add(ceil);
+  const addBox=(x,y,z,sx,sy,sz,mat,rot=0)=>{const m=new T.Mesh(new T.BoxGeometry(sx,sy,sz),mat);m.position.set(x,y,z);m.rotation.y=rot;m.castShadow=true;m.receiveShadow=true;scene3D.add(m);return m};
+  const addCylinder=(x,y,z,r1,r2,h,mat)=>{const m=new T.Mesh(new T.CylinderGeometry(r1,r2,h,18),mat);m.position.set(x,y,z);m.castShadow=true;scene3D.add(m);return m};
+  const metal=new T.MeshStandardMaterial({color:0x8299ac,metalness:.78,roughness:.28});
+  const dark=new T.MeshStandardMaterial({color:0x152538,metalness:.6,roughness:.4});
+  const screen=new T.MeshStandardMaterial({color:0x69e9ef,emissive:0x25a9c4,emissiveIntensity:1.8,metalness:.35,roughness:.25});
+  const plant=new T.MeshStandardMaterial({color:0x47c98c,roughness:.8});
+  const labGlass=new T.MeshStandardMaterial({color:0x8ce8ff,emissive:0x247dba,emissiveIntensity:.7,transparent:true,opacity:.78,metalness:.25,roughness:.12});
+  // Distinct room identity: consoles, bio-pods, lab tanks, engine turbines, and cargo.
+  for(const [x,z] of [[2.2,2.2],[4.8,2.2],[2.2,4.8]]){addBox(x,.55,z,.9,1.05,.42,dark);addBox(x,.92,z-.23,.72,.34,.035,screen)}
+  for(const [x,z] of [[9.3,2.4],[13.6,2.4],[9.3,4.8],[13.6,4.8]]){
+   addCylinder(x,.38,z,.48,.48,.72,dark);addCylinder(x,.78,z,.36,.36,.08,metal);const leaf=new T.Mesh(new T.SphereGeometry(.34,12,10),plant);leaf.position.set(x,1.15,z);leaf.scale.set(.8,1.2,.8);scene3D.add(leaf);
+  }
+  for(const x of [18.2,20.2,22]){addBox(x,.65,2.3,1.05,1.3,.55,dark);addBox(x,.9,2.01,.78,.42,.035,screen)}
+  for(const [x,z] of [[2.2,11.9],[4.7,11.9],[2.2,14.6],[4.7,14.6]]){addCylinder(x,.72,z,.34,.34,1.35,labGlass);addCylinder(x,1.42,z,.39,.39,.09,metal);addBox(x,.22,z,.72,.25,.72,dark)}
+  for(const x of [9.4,13.6]){addCylinder(x,.82,12.7,.72,.72,1.55,dark);addCylinder(x,1.64,12.7,.78,.78,.1,trimMats[4]);addCylinder(x,.82,12.7,.52,.52,.12,metal)}
+  for(const [x,z] of [[18.4,12],[21.2,12],[18.4,14.7],[21.2,14.7]]){addBox(x,.55,z,1.25,1.05,1.05,metal);addBox(x,1.12,z,.75,.08,.78,trimMats[5])}
+  // Cafeteria table and a bright reactor centerpiece in the central hub.
+  addCylinder(12,.38,8.8,1.15,1.15,.42,metal);addCylinder(12,.64,8.8,.72,.72,.12,screen);
+  for(const [x,z] of [[9.3,8.8],[14.7,8.8],[12,8.15],[12,9.45]])addCylinder(x,.24,z,.28,.28,.42,dark);
+  const reactorRing=new T.Mesh(new T.TorusGeometry(1.05,.09,12,48),new T.MeshStandardMaterial({color:0x8b7cff,emissive:0x5139c9,emissiveIntensity:1.7,metalness:.6}));reactorRing.rotation.x=Math.PI/2;reactorRing.position.set(12,.18,8.8);scene3D.add(reactorRing);
+  const roomLabels=[['BRIDGE',3.5,1.18,0x4bd5ff],['BIO-DOME',11.5,1.18,0x72edaa],['COMMS',20,1.18,0xb29aff],['LABORATORY',3.5,11.18,0x78bfff],['ENGINE',11.5,11.18,0xffb16d],['DOCKS',20,11.18,0x6ce8e2]];
+  roomLabels.forEach(([name,x,z,color])=>{const c=document.createElement('canvas');c.width=512;c.height=128;const q=c.getContext('2d');q.fillStyle='#091725';q.fillRect(0,0,512,128);q.strokeStyle='#'+color.toString(16).padStart(6,'0');q.lineWidth=8;q.strokeRect(5,5,502,118);q.fillStyle='#f1fbff';q.font='bold 52px system-ui';q.textAlign='center';q.textBaseline='middle';q.fillText(name,256,66);const tex=new T.CanvasTexture(c);const sign=new T.Mesh(new T.PlaneGeometry(2.7,.68),new T.MeshBasicMaterial({map:tex,transparent:true,side:T.DoubleSide}));sign.position.set(x,2.45,z);scene3D.add(sign)});
+  for(let x=2;x<W-1;x+=3)for(let z of [1.35,8.35,11.35,16.5]){const lamp=new T.Mesh(new T.BoxGeometry(1.3,.06,.24),new T.MeshStandardMaterial({color:0xc4faff,emissive:0x55cfff,emissiveIntensity:2.1}));lamp.position.set(x,3.56,z);scene3D.add(lamp)}
+  [[3,3,0x43caff],[11,3,0x63efa5],[20,3,0xa58bff],[3,13,0x75baff],[11,13,0xffa35e],[20,13,0x66e7df],[12,8,0x8b7cff]].forEach(([x,z,c])=>{const light=new T.PointLight(c,1.5,8,2);light.position.set(x,2.8,z);scene3D.add(light)});
   const taskMat=new T.MeshStandardMaterial({color:0x1b5261,metalness:.55,roughness:.32}),screenMat=new T.MeshStandardMaterial({color:0x4be2db,emissive:0x1b9f9e,emissiveIntensity:1.5});
-  tasks.forEach((t,i)=>{const g=new T.Group();const base=new T.Mesh(new T.CylinderGeometry(.28,.34,.65,12),taskMat);base.position.y=.34;base.castShadow=true;g.add(base);const panel=new T.Mesh(new T.BoxGeometry(.55,.43,.13),taskMat);panel.position.set(0,.85,-.12);g.add(panel);const screen=new T.Mesh(new T.PlaneGeometry(.42,.27),screenMat);screen.position.set(0,.86,-.045);g.add(screen);g.position.set(t.x,0,t.y);scene3D.add(g);task3D[i]=g});
+  tasks.forEach((t,i)=>{const g=new T.Group();const base=new T.Mesh(new T.CylinderGeometry(.28,.34,.65,12),taskMat);base.position.y=.34;base.castShadow=true;g.add(base);const panel=new T.Mesh(new T.BoxGeometry(.55,.43,.13),taskMat);panel.position.set(0,.85,-.12);g.add(panel);const display=new T.Mesh(new T.PlaneGeometry(.42,.27),screenMat);display.position.set(0,.86,-.045);g.add(display);g.position.set(t.x,0,t.y);scene3D.add(g);task3D[i]=g});
   crew3D=[];
   return true;
  }catch(err){console.warn('3D renderer unavailable; using stable fallback',err);if(renderer3D){renderer3D.dispose();renderer3D=null}const old=$('scene3d');if(old)old.remove();return false}
@@ -184,7 +226,7 @@ function wall(x,y){const ix=Math.floor(x),iy=Math.floor(y);return ix<0||iy<0||ix
 function clearLine(x1,y1,x2,y2){let d=Math.hypot(x2-x1,y2-y1),n=Math.ceil(d*8);for(let i=1;i<n;i++){let t=i/n;if(wall(x1+(x2-x1)*t,y1+(y2-y1)*t))return false}return true}
 function move(o,dx,dy){let nx=o.x+dx,ny=o.y+dy,r=o===player?.2:.22;if(!wall(nx+r*Math.sign(dx),o.y)&&!wall(nx-r*Math.sign(dx),o.y))o.x=nx;if(!wall(o.x,ny+r*Math.sign(dy))&&!wall(o.x,ny-r*Math.sign(dy)))o.y=ny}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';toastUntil=performance.now()+1900}
-function start(){role=role;player={x:12,y:5.4,a:Math.PI/2,hp:1};crew=spawnCrew.map((p,i)=>({...p,id:i,color:colors[i],alive:true,traitor:role==='crew'&&i===5,angle:Math.random()*6.28,target:null,stun:0}));tasks.forEach(t=>t.done=false);completed=0;elapsed=0;taskProgress=0;sab='none';sabUntil=0;sabCooldown=0;doorsUntil=0;tagCooldown=0;active=true;$('menu').style.display='none';$('result').style.display='none';$('hud').style.display='block';syncMobileControls();$('roleText').textContent=role==='crew'?'CREWMATE':'SABOTEUR';$('status').textContent=role==='crew'?'Complete all five tasks. Watch for suspicious movement.':'Tag every crew member and sabotage the station.';renderTasks();last=performance.now();requestAnimationFrame(loop);if(innerWidth>760)canvas.requestPointerLock?.()}
+function start(){role=role;player={x:12,y:8.5,a:-Math.PI/2,hp:1};crew=spawnCrew.map((p,i)=>({...p,id:i,color:colors[i],alive:true,traitor:role==='crew'&&i===5,angle:Math.random()*6.28,target:null,stun:0}));tasks.forEach(t=>t.done=false);completed=0;elapsed=0;taskProgress=0;sab='none';sabUntil=0;sabCooldown=0;doorsUntil=0;tagCooldown=0;active=true;$('menu').style.display='none';$('result').style.display='none';$('hud').style.display='block';syncMobileControls();$('roleText').textContent=role==='crew'?'CREWMATE':'SABOTEUR';$('status').textContent=role==='crew'?'Complete all five tasks. Watch for suspicious movement.':'Tag every crew member and sabotage the station.';renderTasks();last=performance.now();requestAnimationFrame(loop);if(innerWidth>760)canvas.requestPointerLock?.()}
 function renderTasks(){$('taskList').innerHTML=tasks.map(t=>'<div class="'+(t.done?'done':'')+'">'+(t.done?'✓ ':'□ ')+t.name+'</div>').join('')}
 function interact(){if(!active)return;if(role==='crew'&&nearTask&&!nearTask.done){toast('Hold USE to complete the task');return}if(role==='impostor'&&nearCrew&&tagCooldown<=0){nearCrew.alive=false;tagCooldown=5;toast('CREW MEMBER TAGGED');if(crew.every(c=>!c.alive))end(true,'Every crew member has been tagged. The station is yours.');return}if(role==='crew'&&nearCrew&&nearCrew.stun>0){toast('Crewmate is recovering.');return}toast('Nothing to use here.')}
 function sabotage(){if(role!=='impostor'||!active)return;if(performance.now()<sabCooldown){toast('Sabotage recharging');return}$('sabotagePanel').style.display='flex'}
@@ -202,7 +244,7 @@ function ray(px,py,ang){let dx=Math.cos(ang),dy=Math.sin(ang),dist=0,hit=0,side=
 function drawWorld(){const w=canvas.width,h=canvas.height;ctx.fillStyle='#182b36';ctx.fillRect(0,0,w,h/2);let g=ctx.createLinearGradient(0,h/2,0,h);g.addColorStop(0,'#33475c');g.addColorStop(.42,'#1c3549');g.addColorStop(1,'#080d1b');ctx.fillStyle=g;ctx.fillRect(0,h/2,w,h/2);let fov=1.12,step=1;for(let x=0;x<w;x+=step){let a=player.a-fov/2+(x/w)*fov,r=ray(player.x,player.y,a),d=Math.max(.04,r.dist*Math.cos(a-player.a)),hh=Math.min(h*1.5,h/d*.82),y=(h-hh)/2,shade=Math.max(35,170-d*10-(r.side?24:0));let hue=(Math.floor(x/Math.max(1,step*34))*43+Math.floor(d*7))%360;ctx.fillStyle='hsl('+hue+' 42% '+Math.max(13,Math.min(48,shade*.23))+'%)';ctx.fillRect(x,y,step+1,hh);let bandY=y+hh*.17;ctx.fillStyle='rgba(5,12,22,'+Math.max(.12,.42-d*.014)+')';ctx.fillRect(x,y+hh*.68,step+1,hh*.32);ctx.fillStyle='rgba(255,255,255,'+Math.max(0,.08-d*.008)+')';ctx.fillRect(x,y+hh*.04,step+1,Math.max(1,h*.004));ctx.fillStyle='rgba(4,13,20,'+Math.max(.08,.32-d*.012)+')';ctx.fillRect(x,bandY,step+1,hh*.035);ctx.fillStyle='rgba(103,232,226,'+Math.max(0,.24-d*.018)+')';ctx.fillRect(x,y+hh*.11,step+1,Math.max(1,h*.003));if((Math.floor(x/Math.max(2,step*7))%5)===0){ctx.fillStyle='rgba(182,240,240,'+Math.max(0,.18-d*.012)+')';ctx.fillRect(x,y+hh*.32,step+1,hh*.012)}ctx.fillStyle='rgba(210,240,245,'+Math.max(0,.18-d*.006)+')';ctx.fillRect(x,y,step,Math.max(1,h*.003))}drawStationDetails(w,h);drawSprites(w,h,fov);let vignette=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*.22,w/2,h/2,Math.max(w,h)*.72);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,5,10,.48)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);if(sab==='lights'&&performance.now()<sabUntil){ctx.fillStyle='rgba(0,0,0,.76)';ctx.fillRect(0,0,w,h);let rad=Math.min(w,h)*.17,gr=ctx.createRadialGradient(w/2,h/2,15,w/2,h/2,rad);gr.addColorStop(0,'#0000');gr.addColorStop(1,'#000d');ctx.fillStyle=gr;ctx.fillRect(0,0,w,h)}}
 function drawStationDetails(w,h){const horizon=h*.5;ctx.save();ctx.lineWidth=Math.max(1,devicePixelRatio);ctx.strokeStyle='rgba(96,220,232,.19)';for(let i=1;i<=10;i++){let t=i/10,y=horizon+(h-horizon)*t*t;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}for(let i=-8;i<=8;i++){ctx.beginPath();ctx.moveTo(w/2+i*w*.035,horizon);ctx.lineTo(w/2+i*w*.19,h);ctx.stroke()}for(let i=-5;i<=5;i++){let topX=w/2+i*w*.045,bottomX=w/2+i*w*.23;ctx.strokeStyle='rgba(4,12,18,.42)';ctx.lineWidth=Math.max(2,w*.002);ctx.beginPath();ctx.moveTo(topX,horizon*.02);ctx.lineTo(bottomX,h);ctx.stroke();ctx.strokeStyle='rgba(91,190,198,.12)';ctx.lineWidth=Math.max(1,w*.0008);ctx.beginPath();ctx.moveTo(topX+2,horizon*.02);ctx.lineTo(bottomX+4,h);ctx.stroke()}for(let i=0;i<4;i++){let yy=horizon*.12+i*horizon*.17;ctx.fillStyle='rgba(3,12,18,.38)';ctx.fillRect(w*.08,yy,w*.84,Math.max(2,h*.009));ctx.fillStyle='rgba(114,238,230,.20)';ctx.fillRect(w*.14,yy+2,w*.72,Math.max(1,h*.0025))}let glow=ctx.createRadialGradient(w*.5,horizon*.28,2,w*.5,horizon*.28,w*.42);glow.addColorStop(0,'rgba(78,224,255,.25)');glow.addColorStop(.55,'rgba(166,96,255,.09)');glow.addColorStop(1,'rgba(103,224,224,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,w,horizon);for(let i=0;i<5;i++){let x=w*(.12+i*.19),y=horizon*.16+(i%2)*horizon*.08;ctx.fillStyle='rgba(122,238,232,.12)';ctx.fillRect(x,y,w*.075,Math.max(3,h*.008));ctx.fillStyle='rgba(183,255,249,.28)';ctx.fillRect(x+w*.008,y+2,w*.059,Math.max(1,h*.002))}ctx.restore()}
 function drawSprites(w,h,fov){let sprites=[...(sab==='comms'?[]:tasks.filter(t=>!t.done).map(t=>({...t,type:'task',color:'#59ded5'}))),...crew.filter(c=>c.alive).map(c=>({...c,type:'crew'}))];sprites.sort((a,b)=>Math.hypot(b.x-player.x,b.y-player.y)-Math.hypot(a.x-player.x,a.y-player.y));for(const s of sprites){let dx=s.x-player.x,dy=s.y-player.y,dist=Math.hypot(dx,dy),ang=Math.atan2(dy,dx)-player.a;while(ang>Math.PI)ang-=Math.PI*2;while(ang< -Math.PI)ang+=Math.PI*2;if(Math.abs(ang)>fov*.65||!clearLine(player.x,player.y,s.x,s.y))continue;let sx=(.5+ang/fov)*w,size=Math.min(h*.6,h/(dist+.25)*.42);if(s.type==='task'){ctx.save();ctx.translate(sx,h/2);ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(0,size*.58,size*.35,size*.11,0,0,7);ctx.fill();ctx.shadowColor='#58e4df';ctx.shadowBlur=18;ctx.fillStyle='#17414b';ctx.beginPath();ctx.roundRect(-size*.23,-size*.06,size*.46,size*.58,size*.09);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#39c9c7';ctx.fillRect(-size*.19,size*.02,size*.38,size*.13);ctx.fillStyle='#bafcff';ctx.fillRect(-size*.12,size*.24,size*.24,size*.08);ctx.fillStyle='#e8ffff';ctx.beginPath();ctx.arc(0,-size*.16,size*.12,0,7);ctx.fill();ctx.restore()}else{ctx.save();ctx.translate(sx,h/2);let suit=s.traitor?'#e75c56':s.color;ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(0,size*.62,size*.35,size*.1,0,0,7);ctx.fill();ctx.shadowColor=suit;ctx.shadowBlur=20;let suitGrad=ctx.createLinearGradient(-size*.25,0,size*.25,0);suitGrad.addColorStop(0,'#14243a');suitGrad.addColorStop(.22,suit);suitGrad.addColorStop(.72,suit);suitGrad.addColorStop(1,'#25334b');ctx.fillStyle=suitGrad;ctx.beginPath();ctx.roundRect(-size*.24,-size*.12,size*.48,size*.68,size*.19);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='rgba(255,255,255,.48)';ctx.lineWidth=Math.max(1,size*.018);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.roundRect(-size*.19,-size*.09,size*.07,size*.48,size*.04);ctx.fill();ctx.fillStyle=s.traitor?'#7f292d':'#173f51';ctx.beginPath();ctx.roundRect(-size*.31,size*.08,size*.13,size*.34,size*.06);ctx.fill();ctx.fillStyle='#d7f6ff';ctx.beginPath();ctx.roundRect(-size*.17,-size*.02,size*.34,size*.2,size*.09);ctx.fill();ctx.fillStyle='#ffffff';ctx.globalAlpha=.55;ctx.fillRect(-size*.11,size*.01,size*.12,size*.035);ctx.globalAlpha=1;ctx.fillStyle=suit;ctx.beginPath();ctx.roundRect(-size*.2,size*.48,size*.16,size*.2,size*.05);ctx.roundRect(size*.04,size*.48,size*.16,size*.2,size*.05);ctx.fill();if(s.traitor){ctx.fillStyle='#fff';ctx.font='bold '+Math.max(10,size*.13)+'px system-ui';ctx.textAlign='center';ctx.fillText('!',0,-size*.2)}ctx.restore()}}}
-function minimap(){mctx.clearRect(0,0,300,224);let cw=300/W,ch=224/H;for(let y=0;y<H;y++)for(let x=0;x<W;x++){mctx.fillStyle=map[y][x]?'#58717d':'#152832';mctx.fillRect(x*cw,y*ch,cw-1,ch-1)}tasks.filter(t=>!t.done).forEach(t=>{mctx.fillStyle='#5ee2df';mctx.fillRect(t.x*cw-3,t.y*ch-3,6,6)});crew.filter(c=>c.alive).forEach(c=>{mctx.fillStyle=c.color;mctx.beginPath();mctx.arc(c.x*cw,c.y*ch,4,0,7);mctx.fill()});mctx.fillStyle='#fff';mctx.beginPath();mctx.arc(player.x*cw,player.y*ch,5,0,7);mctx.fill();mctx.strokeStyle='#fff';mctx.beginPath();mctx.moveTo(player.x*cw,player.y*ch);mctx.lineTo((player.x+Math.cos(player.a)*1.4)*cw,(player.y+Math.sin(player.a)*1.4)*ch);mctx.stroke()}
+function minimap(){mctx.clearRect(0,0,300,224);let cw=300/W,ch=224/H;for(let y=0;y<H;y++)for(let x=0;x<W;x++){mctx.fillStyle=map[y][x]?'#263b50':(y<7?(x<7?'#23617b':x<16?'#28654d':'#514477'):y>10?(x<7?'#3d527a':x<16?'#78503a':'#35636a'):'#465c79');mctx.fillRect(x*cw,y*ch,cw-1,ch-1)}tasks.filter(t=>!t.done).forEach(t=>{mctx.fillStyle='#5ee2df';mctx.fillRect(t.x*cw-3,t.y*ch-3,6,6)});crew.filter(c=>c.alive).forEach(c=>{mctx.fillStyle=c.color;mctx.beginPath();mctx.arc(c.x*cw,c.y*ch,4,0,7);mctx.fill()});mctx.fillStyle='#fff';mctx.beginPath();mctx.arc(player.x*cw,player.y*ch,5,0,7);mctx.fill();mctx.strokeStyle='#fff';mctx.beginPath();mctx.moveTo(player.x*cw,player.y*ch);mctx.lineTo((player.x+Math.cos(player.a)*1.4)*cw,(player.y+Math.sin(player.a)*1.4)*ch);mctx.stroke()}
 function update(dt,now){let speed=(keys.shift?.1:2.5)*dt;if(keys.w||keys.arrowup)move(player,Math.cos(player.a)*speed,Math.sin(player.a)*speed);if(keys.s||keys.arrowdown)move(player,-Math.cos(player.a)*speed,-Math.sin(player.a)*speed);if(keys.a||keys.arrowleft)move(player,Math.cos(player.a-Math.PI/2)*speed,Math.sin(player.a-Math.PI/2)*speed);if(keys.d||keys.arrowright)move(player,Math.cos(player.a+Math.PI/2)*speed,Math.sin(player.a+Math.PI/2)*speed);if(moveTouch.x||moveTouch.y){move(player,Math.cos(player.a)*moveTouch.y*speed+Math.cos(player.a+Math.PI/2)*moveTouch.x*speed,Math.sin(player.a)*moveTouch.y*speed+Math.sin(player.a+Math.PI/2)*moveTouch.x*speed)}player.a+=mouseDX;mouseDX=0;
 crew.forEach(c=>{if(!c.alive)return;c.stun=Math.max(0,c.stun-dt);c.angle+=Math.sin(now/1000+c.id)*dt*.5;if(role==='crew'&&c.traitor){let d=Math.hypot(player.x-c.x,player.y-c.y);if(d<.62&&clearLine(c.x,c.y,player.x,player.y)){end(false,'The hidden saboteur caught you. The station crew was eliminated.');return;}let a=Math.atan2(player.y-c.y,player.x-c.x);move(c,Math.cos(a)*dt*.82,Math.sin(a)*dt*.82);return;}if(!c.target||Math.hypot(c.target.x-c.x,c.target.y-c.y)<.35||Math.random()<.006){let choices=tasks.filter(t=>!t.done);c.target=choices.length?choices[Math.floor(Math.random()*choices.length)]:{x:3+Math.random()*17,y:2+Math.random()*12};}let ang=Math.atan2(c.target.y-c.y,c.target.x-c.x);move(c,Math.cos(ang)*dt*.65,Math.sin(ang)*dt*.65);});
 nearTask=null;nearCrew=null;let best=1.5;tasks.filter(t=>!t.done).forEach(t=>{let d=Math.hypot(t.x-player.x,t.y-player.y);if(d<best){best=d;nearTask=t}});let cbest=1.25;crew.filter(c=>c.alive).forEach(c=>{let d=Math.hypot(c.x-player.x,c.y-player.y);if(d<cbest&&clearLine(player.x,player.y,c.x,c.y)){cbest=d;nearCrew=c}});if(role==='crew'&&nearTask){$('prompt').style.display='block';$('prompt').textContent='E  ·  '+nearTask.name}else if(role==='impostor'&&nearCrew){$('prompt').style.display='block';$('prompt').textContent='E  ·  TAG CREWMATE'}else{$('prompt').style.display='none'}if(role==='crew'&&nearTask&&!nearTask.done&&(holdUse||keys.e)){taskProgress=Math.min(1,taskProgress+dt*.48);$('taskfill').style.width=(taskProgress*100)+'%';if(taskProgress>=1){nearTask.done=true;completed++;taskProgress=0;$('taskfill').style.width='0%';renderTasks();toast('TASK COMPLETE · '+nearTask.name);if(completed===tasks.length)end(true,'All station systems restored. The crew completed every task.');}}else if(!nearTask){taskProgress=0;$('taskfill').style.width='0%'}if(tagCooldown>0)tagCooldown-=dt;if(sab==='reactor'&&now>sabUntil){end(role==='impostor','The reactor emergency was not stopped in time.');return;}if(sab!=='none'&&now>sabUntil){sab='none';toast('SYSTEMS RESTORED')}elapsed+=dt;let left=Math.max(0,roundTime-elapsed);$('timer').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(Math.floor(left%60)).padStart(2,'0');if(left<=0)end(role==='crew'&&completed===tasks.length,'Time expired. '+(role==='crew'?'The station was not fully restored.':'The crew survived the round.'));if(now>toastUntil)$('toast').style.display='none';}
