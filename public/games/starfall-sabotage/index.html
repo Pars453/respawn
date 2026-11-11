@@ -80,6 +80,8 @@ html,body,#game{background:#080d1c}
 #toast{background:linear-gradient(110deg,#142b4aee,#3b2857ee);border-color:#85e9ed;box-shadow:0 0 24px #4adbe544}
 #result{background:radial-gradient(ellipse at 50% 35%,#44346eeb,#071018f5 72%)}
 #result .panel{background:linear-gradient(145deg,#263a59f5,#10182bf5);border-color:#83c9e7aa}
+
+#view{position:relative;z-index:0}#scene3d{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:block}#hud{z-index:2}
 </style></head><body>
 <div id="game"><canvas id="view"></canvas>
 <div id="hud"><div class="topline"><div class="chip" id="objective"><strong>MISSION</strong><div id="status">Complete the station tasks.</div></div><div class="chip"><div id="timer">03:00</div><div id="roleText" style="font-size:10px;color:#9fb4bf">CREWMATE</div></div></div><div id="tasks"><b>STATION TASKS</b><div id="taskList"></div></div><canvas id="minimap" width="300" height="224"></canvas><div id="crosshair"></div><div id="prompt"></div><div id="taskbar"><div id="taskfill"></div></div><div id="toast"></div></div>
@@ -89,6 +91,7 @@ html,body,#game{background:#080d1c}
 <div id="sabotagePanel"><div class="panel"><div class="eyebrow">SYSTEM INTRUSION</div><h2>Choose a sabotage</h2><div class="sab-grid"><button data-sab="lights"><strong>LIGHTS OUT</strong><small>Reduce crew vision</small></button><button data-sab="doors"><strong>LOCK BULKHEADS</strong><small>Seal central doors</small></button><button data-sab="reactor"><strong>REACTOR ALERT</strong><small>Start a station emergency</small></button><button data-sab="comms"><strong>JAM COMMS</strong><small>Hide task markers</small></button></div><p id="sabHint" style="margin:14px 0 0;font-size:11px">Sabotage has a cooldown.</p><button class="secondary" id="closeSab" style="margin-top:14px;width:100%">CLOSE</button></div></div>
 <div id="result"><div class="panel"><div class="eyebrow">MISSION REPORT</div><h1 id="resultTitle">MISSION COMPLETE</h1><p id="resultText"></p><button class="primary" id="again">PLAY AGAIN</button><button class="secondary" id="exit" style="width:100%;margin-top:9px">BACK TO LOBBY</button></div></div><div id="toast"></div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (()=>{'use strict';
 const canvas=document.getElementById('view'),ctx=canvas.getContext('2d'),mini=document.getElementById('minimap'),mctx=mini.getContext('2d');
@@ -121,7 +124,55 @@ let player,crew=[],role='crew',active=false,last=0,elapsed=0,completed=0,taskPro
 const colors=['#ff5d73','#35c8ff','#b58aff','#65e58b','#ffc34d','#ff83d1'];
 const touchDevice=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 function syncMobileControls(){const m=$('mobile');if(m)m.style.display=active&&touchDevice?'block':'none'}
-function resize(){const dpr=Math.min(2.5,Math.max(1,window.devicePixelRatio||1));canvas.width=Math.max(640,Math.round(innerWidth*dpr));canvas.height=Math.max(480,Math.round(innerHeight*dpr));ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high'}addEventListener('resize',()=>{resize();syncMobileControls()});resize();
+let renderer3D=null,scene3D=null,camera3D=null,crew3D=[],task3D=[];
+function resize(){const dpr=Math.min(2.5,Math.max(1,window.devicePixelRatio||1));canvas.width=Math.max(640,Math.round(innerWidth*dpr));canvas.height=Math.max(480,Math.round(innerHeight*dpr));ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';if(renderer3D){renderer3D.setPixelRatio(Math.min(2,dpr));renderer3D.setSize(innerWidth,innerHeight,false);camera3D.aspect=innerWidth/innerHeight;camera3D.updateProjectionMatrix()}}addEventListener('resize',()=>{resize();syncMobileControls()});resize();
+function init3D(){
+ if(!window.THREE)return false;
+ try{
+  const T=window.THREE,layer=document.createElement('canvas');layer.id='scene3d';$('game').insertBefore(layer,$('hud'));
+  renderer3D=new T.WebGLRenderer({canvas:layer,antialias:true,alpha:false,powerPreference:'high-performance'});
+  renderer3D.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer3D.setSize(innerWidth,innerHeight,false);
+  renderer3D.shadowMap.enabled=true;renderer3D.shadowMap.type=T.PCFSoftShadowMap;
+  renderer3D.outputEncoding=T.sRGBEncoding;renderer3D.toneMapping=T.ACESFilmicToneMapping;renderer3D.toneMappingExposure=1.12;
+  scene3D=new T.Scene();scene3D.background=new T.Color(0x081522);scene3D.fog=new T.FogExp2(0x0a1b29,.027);
+  camera3D=new T.PerspectiveCamera(78,innerWidth/innerHeight,.08,90);camera3D.position.set(12,1.62,5.4);
+  scene3D.add(new T.HemisphereLight(0x9bdfff,0x17202e,1.55));
+  const key=new T.DirectionalLight(0xc4f4ff,2.15);key.position.set(-7,13,8);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=15;key.shadow.camera.bottom=-15;scene3D.add(key);
+  const floor=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({color:0x24394a,roughness:.78,metalness:.18}));floor.rotation.x=-Math.PI/2;floor.position.set(W/2,0,H/2);floor.receiveShadow=true;scene3D.add(floor);
+  const grid=new T.GridHelper(Math.max(W,H),Math.max(W,H),0x4e8794,0x315264);grid.position.set(W/2,.012,H/2);grid.material.transparent=true;grid.material.opacity=.22;scene3D.add(grid);
+  const wallMat=new T.MeshStandardMaterial({color:0x344c60,roughness:.58,metalness:.28}),trimMat=new T.MeshStandardMaterial({color:0x48cbd0,emissive:0x126b75,emissiveIntensity:.65,metalness:.55,roughness:.3});
+  const wallGeo=new T.BoxGeometry(1,3.7,1),trimGeo=new T.BoxGeometry(1.01,.075,1.01);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(map[y][x]){
+   const wall=new T.Mesh(wallGeo,wallMat);wall.position.set(x+.5,1.85,y+.5);wall.castShadow=true;wall.receiveShadow=true;scene3D.add(wall);
+   const trim=new T.Mesh(trimGeo,trimMat);trim.position.set(x+.5,3.58,y+.5);scene3D.add(trim);
+  }
+  const ceil=new T.Mesh(new T.PlaneGeometry(W,H),new T.MeshStandardMaterial({color:0x101f2c,roughness:.95,metalness:.12,side:T.DoubleSide}));ceil.rotation.x=Math.PI/2;ceil.position.set(W/2,3.72,H/2);scene3D.add(ceil);
+  for(let x=2;x<W-1;x+=4){const lamp=new T.Mesh(new T.BoxGeometry(1.55,.055,.24),new T.MeshStandardMaterial({color:0x9cfaff,emissive:0x43d9ef,emissiveIntensity:2.3}));lamp.position.set(x,3.58,5.5);scene3D.add(lamp);const pl=new T.PointLight(0x42dff5,1.15,8,2);pl.position.set(x,3.25,5.5);scene3D.add(pl)}
+  const taskMat=new T.MeshStandardMaterial({color:0x1b5261,metalness:.55,roughness:.32}),screenMat=new T.MeshStandardMaterial({color:0x4be2db,emissive:0x1b9f9e,emissiveIntensity:1.5});
+  tasks.forEach((t,i)=>{const g=new T.Group();const base=new T.Mesh(new T.CylinderGeometry(.28,.34,.65,12),taskMat);base.position.y=.34;base.castShadow=true;g.add(base);const panel=new T.Mesh(new T.BoxGeometry(.55,.43,.13),taskMat);panel.position.set(0,.85,-.12);g.add(panel);const screen=new T.Mesh(new T.PlaneGeometry(.42,.27),screenMat);screen.position.set(0,.86,-.045);g.add(screen);g.position.set(t.x,0,t.y);scene3D.add(g);task3D[i]=g});
+  crew3D=[];
+  return true;
+ }catch(err){console.warn('3D renderer unavailable; using stable fallback',err);if(renderer3D){renderer3D.dispose();renderer3D=null}const old=$('scene3d');if(old)old.remove();return false}
+}
+function makeCrewModel(color){
+ const T=THREE,g=new T.Group(),suit=new T.MeshStandardMaterial({color:new T.Color(color),metalness:.32,roughness:.36}),dark=new T.MeshStandardMaterial({color:0x182b3a,metalness:.45,roughness:.38}),visor=new T.MeshStandardMaterial({color:0x9eeeff,metalness:.72,roughness:.16,emissive:0x164b68,emissiveIntensity:.35});
+ const torso=new T.Mesh(new T.CylinderGeometry(.22,.27,.68,16),suit);torso.position.y=.64;torso.castShadow=true;g.add(torso);
+ const head=new T.Mesh(new T.SphereGeometry(.235,18,14),suit);head.position.y=1.02;head.scale.set(1,.88,1);head.castShadow=true;g.add(head);
+ const glass=new T.Mesh(new T.SphereGeometry(.155,18,12),visor);glass.position.set(0,.99,-.185);glass.scale.set(1,.68,.48);g.add(glass);
+ for(const x of [-.145,.145]){const leg=new T.Mesh(new T.CylinderGeometry(.085,.095,.28,10),dark);leg.position.set(x,.17,0);g.add(leg)}
+ const pack=new T.Mesh(new T.BoxGeometry(.22,.38,.16),dark);pack.position.set(0,.66,.22);g.add(pack);
+ g.userData.suit=suit;return g;
+}
+function render3D(){
+ if(!renderer3D||!scene3D||!player)return false;
+ const T=THREE;camera3D.position.set(player.x,1.62,player.y);camera3D.lookAt(player.x+Math.cos(player.a),1.48,player.y+Math.sin(player.a));
+ while(crew3D.length<crew.length){const c=crew[crew3D.length],model=makeCrewModel(c.color);scene3D.add(model);crew3D.push(model)}
+ crew.forEach((c,i)=>{const m=crew3D[i];m.visible=!!c.alive;m.position.set(c.x,0,c.y);m.rotation.y=-c.angle+Math.PI/2});
+ tasks.forEach((t,i)=>{if(task3D[i])task3D[i].visible=!t.done});
+ renderer3D.render(scene3D,camera3D);return true;
+}
+
+init3D();
 function wall(x,y){const ix=Math.floor(x),iy=Math.floor(y);return ix<0||iy<0||ix>=W||iy>=H||map[iy][ix]===1||(sab==='doors'&&performance.now()<doorsUntil&&((ix===11||ix===12)&&iy>5&&iy<13));}
 function clearLine(x1,y1,x2,y2){let d=Math.hypot(x2-x1,y2-y1),n=Math.ceil(d*8);for(let i=1;i<n;i++){let t=i/n;if(wall(x1+(x2-x1)*t,y1+(y2-y1)*t))return false}return true}
 function move(o,dx,dy){let nx=o.x+dx,ny=o.y+dy,r=o===player?.2:.22;if(!wall(nx+r*Math.sign(dx),o.y)&&!wall(nx-r*Math.sign(dx),o.y))o.x=nx;if(!wall(o.x,ny+r*Math.sign(dy))&&!wall(o.x,ny-r*Math.sign(dy)))o.y=ny}
@@ -148,7 +199,7 @@ function minimap(){mctx.clearRect(0,0,300,224);let cw=300/W,ch=224/H;for(let y=0
 function update(dt,now){let speed=(keys.shift?.1:2.5)*dt;if(keys.w||keys.arrowup)move(player,Math.cos(player.a)*speed,Math.sin(player.a)*speed);if(keys.s||keys.arrowdown)move(player,-Math.cos(player.a)*speed,-Math.sin(player.a)*speed);if(keys.a||keys.arrowleft)move(player,Math.cos(player.a-Math.PI/2)*speed,Math.sin(player.a-Math.PI/2)*speed);if(keys.d||keys.arrowright)move(player,Math.cos(player.a+Math.PI/2)*speed,Math.sin(player.a+Math.PI/2)*speed);if(moveTouch.x||moveTouch.y){move(player,Math.cos(player.a)*moveTouch.y*speed+Math.cos(player.a+Math.PI/2)*moveTouch.x*speed,Math.sin(player.a)*moveTouch.y*speed+Math.sin(player.a+Math.PI/2)*moveTouch.x*speed)}player.a+=mouseDX;mouseDX=0;
 crew.forEach(c=>{if(!c.alive)return;c.stun=Math.max(0,c.stun-dt);c.angle+=Math.sin(now/1000+c.id)*dt*.5;if(role==='crew'&&c.traitor){let d=Math.hypot(player.x-c.x,player.y-c.y);if(d<.62&&clearLine(c.x,c.y,player.x,player.y)){end(false,'The hidden saboteur caught you. The station crew was eliminated.');return;}let a=Math.atan2(player.y-c.y,player.x-c.x);move(c,Math.cos(a)*dt*.82,Math.sin(a)*dt*.82);return;}if(!c.target||Math.hypot(c.target.x-c.x,c.target.y-c.y)<.35||Math.random()<.006){let choices=tasks.filter(t=>!t.done);c.target=choices.length?choices[Math.floor(Math.random()*choices.length)]:{x:3+Math.random()*17,y:2+Math.random()*12};}let ang=Math.atan2(c.target.y-c.y,c.target.x-c.x);move(c,Math.cos(ang)*dt*.65,Math.sin(ang)*dt*.65);});
 nearTask=null;nearCrew=null;let best=1.5;tasks.filter(t=>!t.done).forEach(t=>{let d=Math.hypot(t.x-player.x,t.y-player.y);if(d<best){best=d;nearTask=t}});let cbest=1.25;crew.filter(c=>c.alive).forEach(c=>{let d=Math.hypot(c.x-player.x,c.y-player.y);if(d<cbest&&clearLine(player.x,player.y,c.x,c.y)){cbest=d;nearCrew=c}});if(role==='crew'&&nearTask){$('prompt').style.display='block';$('prompt').textContent='E  ·  '+nearTask.name}else if(role==='impostor'&&nearCrew){$('prompt').style.display='block';$('prompt').textContent='E  ·  TAG CREWMATE'}else{$('prompt').style.display='none'}if(role==='crew'&&nearTask&&!nearTask.done&&(holdUse||keys.e)){taskProgress=Math.min(1,taskProgress+dt*.48);$('taskfill').style.width=(taskProgress*100)+'%';if(taskProgress>=1){nearTask.done=true;completed++;taskProgress=0;$('taskfill').style.width='0%';renderTasks();toast('TASK COMPLETE · '+nearTask.name);if(completed===tasks.length)end(true,'All station systems restored. The crew completed every task.');}}else if(!nearTask){taskProgress=0;$('taskfill').style.width='0%'}if(tagCooldown>0)tagCooldown-=dt;if(sab==='reactor'&&now>sabUntil){end(role==='impostor','The reactor emergency was not stopped in time.');return;}if(sab!=='none'&&now>sabUntil){sab='none';toast('SYSTEMS RESTORED')}elapsed+=dt;let left=Math.max(0,roundTime-elapsed);$('timer').textContent=String(Math.floor(left/60)).padStart(2,'0')+':'+String(Math.floor(left%60)).padStart(2,'0');if(left<=0)end(role==='crew'&&completed===tasks.length,'Time expired. '+(role==='crew'?'The station was not fully restored.':'The crew survived the round.'));if(now>toastUntil)$('toast').style.display='none';}
-function loop(now){if(!active)return;let dt=Math.min(.05,(now-last)/1000||0);last=now;update(dt,now);drawWorld();minimap();requestAnimationFrame(loop)}
+function loop(now){if(!active)return;let dt=Math.min(.05,(now-last)/1000||0);last=now;update(dt,now);if(!render3D())drawWorld();minimap();requestAnimationFrame(loop)}
 const stick=$('stick'),knob=$('knob');let stickPointer=null;function releaseStick(){stickPointer=null;moveTouch={x:0,y:0};knob.style.transform='translate(0,0)'}stick.addEventListener('pointerdown',e=>{e.preventDefault();stickPointer=e.pointerId;try{stick.setPointerCapture(e.pointerId)}catch(_){}moveStick(e)});stick.addEventListener('pointermove',e=>{if(stickPointer===e.pointerId)moveStick(e)});stick.addEventListener('pointerup',releaseStick);stick.addEventListener('pointercancel',releaseStick);stick.addEventListener('lostpointercapture',releaseStick);function moveStick(e){let r=stick.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),len=Math.hypot(x,y),max=48;if(len>max){x=x/len*max;y=y/len*max}moveTouch={x:x/max,y:-y/max};knob.style.transform='translate('+x+'px,'+y+'px)'}
 let lookStart=null;canvas.addEventListener('touchstart',e=>{const t=[...e.changedTouches].find(v=>v.clientX>innerWidth*.42);if(t)lookStart={id:t.identifier,x:t.clientX,y:t.clientY}},{passive:true});canvas.addEventListener('touchmove',e=>{if(lookStart){let t=[...e.changedTouches].find(v=>v.identifier===lookStart.id);if(t){player.a+=(t.clientX-lookStart.x)*.0045;lookStart={id:t.identifier,x:t.clientX,y:t.clientY}}}},{passive:true});canvas.addEventListener('touchend',e=>{if(lookStart&&[...e.changedTouches].some(v=>v.identifier===lookStart.id))lookStart=null});canvas.addEventListener('touchcancel',()=>lookStart=null);$('useBtn').addEventListener('pointerdown',e=>{e.preventDefault();if(role==='crew')holdUse=true;else interact()});$('useBtn').addEventListener('pointerup',()=>{holdUse=false});$('useBtn').addEventListener('pointercancel',()=>{holdUse=false});$('useBtn').addEventListener('pointerleave',()=>{holdUse=false});$('sabBtn').onclick=sabotage;$('runBtn').addEventListener('pointerdown',e=>{e.preventDefault();keys.shift=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>$('runBtn').addEventListener(ev,()=>keys.shift=false));addEventListener('blur',()=>{keys.shift=false;holdUse=false;releaseStick()})
 })();
